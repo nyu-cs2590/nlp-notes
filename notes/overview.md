@@ -79,10 +79,10 @@ Experience is needed to test our reasoning and reasoning is needed in turn to ge
 ## Challenges in NLP
 Why is language hard? What are prominent features of NLP compared to other fields in AI?
 
-- Discrete: Unlike images and speech, text is symbolic. A single word can carry lots of weight and decides the meaning of a sentence.
-- Compositionality: The discrete symbols can be composed in numerous ways to express different meanings. Text with similar surface forms can mean completely different things.
-- Sparsity: Language has a long tail distribution (e.g., [Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law)). How do we robustly capture rare linguistic phenomena on the long tail?
-- Ambiguity: The same word / sentence can be interpreted differently depending on the context, e.g., multi-sense word, PP attachment, sarcasm.
+- **Discrete**: Unlike images and speech, text is symbolic. A single word can carry lots of weight and decides the meaning of a sentence.
+- **Compositionality**: The discrete symbols can be composed in numerous ways to express different meanings. Text with similar surface forms can mean completely different things.
+- **Sparsity**: Language has a long tail distribution (e.g., [Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law)). How do we robustly capture rare linguistic phenomena on the long tail?
+- **Ambiguity**: The same word / sentence can be interpreted differently depending on the context, e.g., multi-sense word, PP attachment, sarcasm.
 
 ## Course overview
 We will start with the representation of text, which is inherently discrete and compositional.

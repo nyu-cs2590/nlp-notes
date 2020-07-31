@@ -35,7 +35,7 @@ Some lectures will be based on the following books (available freely online):
 **Background**: Here are some useful materials if you want to review the background knowledge.
 
 - Probability and optimization in the appendix of Eisenstein's book.
-- [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) for DS-GA.1002.
+- [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) from DS-GA.1002.
 - [A short guide to linguistics](https://faculty.washington.edu/ebender/100things-sem_prag.html) for NLPers by Bender. 
 
 
@@ -46,5 +46,5 @@ Some lectures will be based on the following books (available freely online):
 
 schedule
 coursework
-notes/index.md
+notes/index
 ```
