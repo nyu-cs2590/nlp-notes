@@ -113,6 +113,6 @@ Finally, we will briefly touch on discourse and grounding, which are important t
     - Discourse: what is the communication goal of the text?
     - Grounding: how do we relate language to the world?
 
-## References
+## Additional readings 
 - Wikipedia. [History of artificial intelligence.](https://en.wikipedia.org/wiki/History_of_artificial_intelligence)
 - Kenneth Church. [A Pendulum Swung Too Far.](http://languagelog.ldc.upenn.edu/myl/ldc/swung-too-far.pdf)

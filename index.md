@@ -31,6 +31,7 @@ Some lectures will be based on the following books (available freely online):
 - [Dan Jurafsky and James H. Martin. Speech and Language Processing.](https://web.stanford.edu/~jurafsky/slp3/) A classic textbook covering both traditional and modern approaches to NLP.
 - [Jacob Eisenstein. Introduction to Natural Language Processing.](https://github.com/jacobeisenstein/gt-nlp-class/blob/master/notes/eisenstein-nlp-notes.pdf) A comprehensive reference with additional coverage on relevant topics in linguistics and slightly more advanced topics in machine learning.
 - [Yoav Goldberg. Neural Network Methods for Natural Language Processing.](https://u.cs.biu.ac.il/~yogo/nnlp.pdf) Covers neural network models for NLP.
+- [Aston Zhang, Zack C. Lipton, Mu Li, and Alex J. Smola. Dive into Deep Learning.](https://d2l.ai/index.html) Covers many topics in neural networks and features numerous hands-on examples. We will use some examples from this book.
 
 **Background**: Here are some useful materials if you want to review the background knowledge.
 

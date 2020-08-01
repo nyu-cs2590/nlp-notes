@@ -70,5 +70,83 @@ because there are exponentially many sequences or trees and enumerating their sc
 We will need dynamic programming or integer linear programming in these cases.
 In latent variable models, we might want to marginalize over the latent variables,
 which again can be intractable.
-The main point is that inference is not often as easy as taking class with the maximum score.
+The main point is that inference is often not as easy as taking the class with the maximum score.
 
+## Loss functions and optimization
+Below we briefly review the two key steps in learning: specifying the loss function and minimizing the average loss on the training set.
+The following text is meant to be a refresher only.
+For proper coverage of the topic, please refer to an introductory ML course (e.g. [DS-GA.1003](https://davidrosenberg.github.io/ml2019/#lectures)).
+
+### Loss functions
+A loss function measures the goodness of a specific model prediction.
+It takes the input $x$, the gold label $y$, the model output $f_w(x)$, and produce a score for this prediction:
+$$
+L(x, y, f_w(x)) ,
+$$
+where $w$ denotes the parameters of the model $f$.
+
+Here are some common margin-based loss functions for classification.
+Recall that margin is the score for the correct class:
+$yf_w(x)$,
+and a large margin means that the prediction is more correct.
+```{.python .input}
+%matplotlib inline
+from IPython import display
+from matplotlib import pyplot as plt
+import numpy as np
+
+display.set_matplotlib_formats('svg')
+
+x = np.arange(-2, 3, 0.01)
+
+plt.plot(x, [1 if _x <= 0 else 0 for _x in x], label="0-1 loss")
+plt.plot(x, np.maximum(0, 1-x), label="hinge loss");
+plt.plot(x, np.log(1 + np.exp(-x)), label="logistic loss")
+plt.legend()
+plt.ylabel('$L(x, y, f_w(x))$')
+plt.xlabel('$yf_w(x)$')
+```
+
+The loss function tells us how good the prediciton for a specific input $x$ is.
+Note that the input is a random variable following some (unknown) data distribution,
+thus the loss is also a random variable.
+To measure the performance of the model on the distribution,
+we estimate the expected loss (risk) by averaging over the training examples.
+This gives us the learning objective:
+$$
+\min \frac{1}{N}\sum_{i=1}^N L(x^{(n)}, y^{(n)}, f_w) .
+$$
+
+### Gradient descent
+Now that we have a learning objective, the rest is an optimization problem.
+Stochastic gradient descent (SGD) is the most widely used optimization algorithm in ML.
+Below we briefly review the main ideas in SGD.
+
+Gradient is the direction where the objective increases fastest.
+Therefore, to minimize the objective, we want to move in the opposite direction of the gradient.
+Given an initial weight vector $w_0$, we iteratively update it by
+$$
+w \leftarrow w - \eta \nabla_w F(w) ,
+$$
+where $\eta$ is the step size and $F$ is our minimization objective.
+The algorithm is best [visualized in 1D](https://d2l.ai/chapter_optimization/gd.html#gradient-descent-in-one-dimension).
+GD is guaranteed to find the global minimum if $F$ is convex.
+However, in practice it works well for non-convex functions such as neural networks.
+
+Unfortunately, GD can be quite slow for ML problems.
+Note that computing $\nabla_w F(w)$ requires going through the whole training set, which may easily contain millions of examples.
+What is we just compute gradient on a single example?
+Intuitively, the single-example is noisy but should still provide us some useful information.
+After all, we want to reduce the loss on all examples.
+This is exactly the idea behind SGD.
+The algorithm is almost the same as GD except that in each iteration the gradient is estimated on a single example (or a minibatch of examples).
+Compared to GD, SGD allows more updates to the model within the same amount of time.
+Since each step we are following a noisy direction,
+it is important to choose the step size carefully.
+See illustration of [the effect of different step sizes](https://d2l.ai/chapter_optimization/sgd.html#dynamic-learning-rate).
+
+## Summary
+We have provided a quick review of the basic recipe for building ML systems:
+design a model for the task, specify a loss function,
+minimize the average loss, and run inference given the learned model.
+In the rest of this course, we will see how to extend this framework to various structured prediction problems in NLP.
