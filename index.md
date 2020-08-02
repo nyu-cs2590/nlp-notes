@@ -8,6 +8,12 @@
 - TAs: TBD
 - Office hours: TBD
 
+## Accessibility
+We try to make all of the course material accessible.
+If you need additional accomadation, please send us an email.
+Please let us know in advance any accomadation needed for assignments (in PDF)
+and the midterm (online).
+
 ## Important dates
 
 ## Course information
@@ -32,6 +38,8 @@ Some lectures will be based on the following books (available freely online):
 - [Jacob Eisenstein. Introduction to Natural Language Processing.](https://github.com/jacobeisenstein/gt-nlp-class/blob/master/notes/eisenstein-nlp-notes.pdf) A comprehensive reference with additional coverage on relevant topics in linguistics and slightly more advanced topics in machine learning.
 - [Yoav Goldberg. Neural Network Methods for Natural Language Processing.](https://u.cs.biu.ac.il/~yogo/nnlp.pdf) Covers neural network models for NLP.
 - [Aston Zhang, Zack C. Lipton, Mu Li, and Alex J. Smola. Dive into Deep Learning.](https://d2l.ai/index.html) Covers many topics in neural networks and features numerous hands-on examples. We will use some examples from this book.
+
+In the lecture notes, we will use JM, E, G, D2L to refer to the above books respectively.
 
 **Background**: Here are some useful materials if you want to review the background knowledge.
 

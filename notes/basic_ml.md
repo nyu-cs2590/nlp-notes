@@ -89,6 +89,7 @@ Here are some common margin-based loss functions for classification.
 Recall that margin is the score for the correct class:
 $yf_w(x)$,
 and a large margin means that the prediction is more correct.
+
 ```{.python .input}
 %matplotlib inline
 from IPython import display
