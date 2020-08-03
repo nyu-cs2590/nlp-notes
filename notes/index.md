@@ -7,4 +7,5 @@
 overview
 basic_ml
 text_classification
+distributed_representation
 ```

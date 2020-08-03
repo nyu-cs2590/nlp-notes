@@ -12,7 +12,6 @@ We will use the IMDB movie review dataset as our running example.
 from d2l import mxnet as d2l
 from mxnet import gluon, np, npx
 import gluonnlp as nlp
-import os
 npx.set_np()
 train_dataset = nlp.data.IMDB(root='data/imdb', segment='train')
 ```
@@ -298,6 +297,8 @@ Thus it's common to represent the feature value as a string and hash it to integ
 e.g. $\text{hash}(\text{"w=happy"}) = 1$.
 See [FeatureHasher](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html#sklearn.feature_extraction.FeatureHasher)
 from `sklearn`.
+
+## Evaluation
 
 ## Additional readings
 - Sida Wang and Christopher D. Manning. [Baselines and Bigrams: Simple, Good Sentiment and Topic Classification.](http://www.sidaw.xyz/pubs/wang2012simple.pdf) ACL 2012.
