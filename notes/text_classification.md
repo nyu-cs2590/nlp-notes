@@ -299,6 +299,7 @@ See [FeatureHasher](https://scikit-learn.org/stable/modules/generated/sklearn.fe
 from `sklearn`.
 
 ## Evaluation
+TODO
 
 ## Additional readings
 - Sida Wang and Christopher D. Manning. [Baselines and Bigrams: Simple, Good Sentiment and Topic Classification.](http://www.sidaw.xyz/pubs/wang2012simple.pdf) ACL 2012.
