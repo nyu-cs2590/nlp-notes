@@ -228,6 +228,8 @@ i.e. the new word vector in a space spanned by the document clusters.
 In sum, the columns of $U$ corresponds to document clusters
 and the rows of $U$ corresponds to the new word vectors.
 This is a beautiful decomposition that captures the hidden relation between document and words.
+In practice, however, we do not get the meaning of a word/document cluster for free,
+a person will have to look at the result and assign it a category (e.g. complaints or critiques for some movie genre in our example).
 
 We have not talked about dimensionality reduction.
 But this is really simple given the decomposition.
@@ -246,21 +248,166 @@ for learning the represention of two sets of related objects.
 3. [Optional] Reduce dimensionality by SVD.
 4. Compute similarity between vectors using a distance metric, e.g. cosine distance.
 
-## Word embeddings
-Word embeddings are also low-dimensional, dense vector representations for words,
-but this term appears to be associated more often with word vectors learned by neural networks. 
-Our goal is the same as before, we want to learn word vectors such that words similar in meaning are also close to each other according to some distance metric.
-We will also use the same motivation as the vector space model:
-Similar words tend to occur in the same context.
-The key idea in learning word embeddings is to design self-supervised learning objectives that would result in vectors of the above property (intuitively).
+## Learning word embeddings
+Our goal is to find word vectors such that words similar in meaning are also close to each other according to some distance metric.
+Let's think about how for formalize this as a learning problem,
+i.e. specifying the learning objective and the model.
+The most useful takeaway from the vector space model is that
+similar words tend to occur in the same context.
+The key idea in learning word embeddings is to design self-supervised learning objectives that would result in vectors of this property (intuitively).
 
-### The Skip-gram model
+### The skip-gram model
+The task is to predict neighbors of a word given the word itself.
+Specifically, let $(w_{i-k}, \ldots, w_i, \ldots, w_{i+k})$ be a window around word $w_i$.
+We assume that each of the word in the window is generated independently conditioned on $w_i$:
+$$
+p(w_{i-k}, \ldots, w_{i-1}, w_{i+1}, \ldots, w_{i+k} \mid w_i) =
+\prod_{j=i-k}^{i-1}p(w_j\mid w_i) \;.
+$$
 
+This is similar to the Naive Bayes model, except that it's now conditioned on a word.
+We parameterize the conditional distribution by
+$$
+p(w_j\mid w_i; f_c, f_w) = \frac{\exp\left [ f_c(w_j)^Tf_w(w_i)\right ]}
+{\sum_{k=1}^{|V|}\exp\left [f_c(w_k)^Tf_w(w_i)\right ]} \;,
+$$
+where $f_c$ is a dictionary that maps a word in the context to a vector,
+and $f_w$ maps the center word to a vector.
+Note that the same word will have different vector representations
+depending on whether it is in the context or at the center.
+We can then estimate the parameters/embeddings by MLE using SGD.
+
+The word embeddings are given by $f_w$.
+Note that the objective encourages the embedding of a word
+to have large dot product with the embedding of it neighboring words
+(i.e. a small angle)
+Thus if two words tend to occur in similar context,
+they will have similar embeddings. 
+
+### The continuous-bag-of-words model (CBOW) 
+The task is very similar to that of the skip-gram model. 
+Given a window of words, $(w_{i-k}, \ldots, w_i, \ldots, w_{i+k})$,
+instead of predicting the context words from the center word,
+we can also predict the center word from the context words.
+
+CBOW uses the following model
+$$
+p(w_i \mid w_{i-k}, \ldots, w_{i-1}, w_{i+1}, \ldots, w_{i+k})
+= \frac{\exp\left [
+    f_w(w_i)^T \sum_{j=1,j\neq i}^{k} (f_c(w_{i-j}) + f_c(w_{i+j})
+    \right ]}
+{\sum_{t=1}^{|V|} \exp\left [
+    f_w(w_t)^T \sum_{j=1,j\neq i}^{k} (f_c(w_{i-j}) + f_c(w_{i+j})
+    \right ]}
+\;,
+$$
+where the context is represented as a sum of embeddings of individual word in the window (hence the name continuous bag of words).
+Similar to skip-gram, we use MLE to learn the parameters/embeddings.
+
+### Properties of word embeddings
+Recall that we can give physical meanings to each dimension of the word vectors obtained from SVD on the term-document matrix.
+What about the skip-gram/CBOW embeddings?
+Unfortunately we don't have a good answer (see related work in :numref:`reading`).
+
+Emprically, we have found that word embeddings are useful for finding similar words and solving word analogy problems.
+
+Let's try it out using the GloVe embeddings:
+```{.python .input}
+glove_6b50d = nlp.embedding.create('glove', source='glove.6B.50d')
+vocab = nlp.Vocab(nlp.data.Counter(glove_6b50d.idx_to_token))
+vocab.set_embedding(glove_6b50d)
+```
+Find similar words:
+```{.python .input}
+from mxnet import nd
+
+def norm_vecs_by_row(x):
+    return x / nd.sqrt(nd.sum(x * x, axis=1) + 1E-10).reshape((-1,1))
+
+def get_knn(vocab, k, word):
+    word_vec = vocab.embedding[word].reshape((-1, 1))
+    vocab_vecs = norm_vecs_by_row(vocab.embedding.idx_to_vec)
+    dot_prod = nd.dot(vocab_vecs, word_vec)
+    indices = nd.topk(dot_prod.reshape((len(vocab), )), k=k+1, ret_typ='indices')
+    indices = [int(i.asscalar()) for i in indices]
+    # Remove unknown and input tokens.
+    return vocab.to_tokens(indices[1:])
+
+get_knn(vocab, 5, 'movie')
+```
+
+Word analogy problems have the form a : b :: c : d,
+e.g. man : woman :: king : queen.
+We assume that such relations can be obtained through addition in the vector space, e.g.
+```
+f_w(man) - f_w(woman) \approx f_w(king) - f_w(queen) \;.
+```
+Thus, given a, b, c, we can find d by finding the word whose embedding is closest to
+$f_w(b) - f_w(a) + f_w(c)$,
+with some distance metric.
+```{.python .input}
+def get_top_k_by_analogy(vocab, k, word1, word2, word3):
+    word_vecs = vocab.embedding[word1, word2, word3]
+    word_diff = (word_vecs[1] - word_vecs[0] + word_vecs[2]).reshape((-1, 1))
+    vocab_vecs = norm_vecs_by_row(vocab.embedding.idx_to_vec)
+    dot_prod = nd.dot(vocab_vecs, word_diff)
+    indices = nd.topk(dot_prod.reshape((len(vocab), )), k=k, ret_typ='indices')
+    indices = [int(i.asscalar()) for i in indices]
+    return vocab.to_tokens(indices)
+
+get_top_k_by_analogy(vocab, 3, 'man', 'woman', 'son')
+```
+
+### Summary
+These models are quite similar to the vector space models
+in the sense that they connect a word to its context.
+Again, this is a general framework where we are free to choose other contexts.
+For example, we can learn product embedding by predicting which products are commonly bought together.
 
 ## Brown clusters
+Both the vector space model and the neural word embeddings
+do not provide explicit clusters of words (although we can cluster the obtained vectors).
+Now let's take a different approach and think how we can directly index the words.
+Much like how we organize books in the library,
+e.g. science -> computer science -> artificial intelligence -> natural language processing -> introduction to natural language processing,
+if we cluster words hierarchically and form a tree,
+we can use the path to each word to represent its meaning.
+Similar words will have similar paths (i.e. shared ancestors on the tree).
+Here are some example [word clusters on Twitter](http://www.cs.cmu.edu/~ark/TweetNLP/cluster_viewer.html).
+
+How do we hierarchically cluster words (or any other objects)?
+Let's start build the clusters bottom up.
+We start with a set of words, each in its own cluster,
+then we iteratively merge the two closest clusters,
+until only one cluster is left (i.e. the root).
+Note that this algorithm requires a distance metric.
+We measure the distance between two clusters by the expected PMI of pairs of words from different clusters.
+Let $C_i$ and $C_j$ be two clusters of words, their similarity is defined by
+$$
+s(C_i, C_j) = \sum_{w_1\in C_i}\sum_{w_2\in C_j} p(w_1, w_2)
+\underbrace{\log\frac{p(w_1, w_2)}{p(w_1)p(w_2)}}_{\text{pointwise mutual information}}
+\;,
+$$
+where $p(w_1, w_2)$ is the probability of the bigram "$w_1 w_2$",
+and $p(w_1)$ and $p(w_2)$ are unigram probabilities.
+Both can be estimated by counts.
+
+**Exercise:** How would you cluster the words using a top-down approach?
 
 ## Evaluation
+**Intrinsic evaluation**
+measures whether two words closer in meaning are indeed closer in the vector space.
+We can use word similarity datset such as [SimLex-999](https://www.aclweb.org/anthology/J15-4004/) with human annotated similarity scores.
+
+**Extrinsic evaluation**
+measures the effect of word vectors on downstream tasks.
+For example, we can replace the BoW representation with an average of word embeddings for text classification using logistic regression,
+and evaluate which embeddings yields better classification accuracy.
 
 ## Additional readings
-[1] Stanford Encyclopedia of Philosophy. [Connectionism representation.](https://plato.stanford.edu/entries/connectionism/#ConRep)
-[2] Jeffrey Pennington, Richard Socher and Christopher D. Manning. [GloVe: Global Vectors for Word Representation](https://nlp.stanford.edu/pubs/glove.pdf). EMNLP 2014.
+:label:`reading`
+- Stanford Encyclopedia of Philosophy. [Connectionism representation.](https://plato.stanford.edu/entries/connectionism/#ConRep)
+- Jeffrey Pennington, Richard Socher and Christopher D. Manning. [GloVe: Global Vectors for Word Representation.](https://nlp.stanford.edu/pubs/glove.pdf) EMNLP 2014.
+- Omer Levy and Yoav Goldberg. [Neural Word Embedding as Implicit Matrix Factorization.](https://papers.nips.cc/paper/5477-neural-word-embedding-as-implicit-matrix-factorization) NeurIPS 2014.
+
+
