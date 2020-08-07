@@ -146,13 +146,13 @@ we will have problems with rare words (low frequency in the training set),
 because their estimated conditional probabilities might be off.
 
 To remedy this problem, we use a technique called "smoothing",
-which add pseudocounts to each count.
-For example, Laplace smoothing add a constant pseudocount to each word such that
+which add pseudocounts to the actual count of each word:
 $$
 p(x_j \mid y) = \frac{\alpha + \text{count}(x_j, y)}{\alpha |V| + \sum_{x\in V}\text{count}(x, y)} .
 $$
 This means that even before we have seen any data,
 we believe that all words should occur $\alpha$ times.
+For Laplace smoothing $\alpha=1$. 
 
 **Question:** what happens when we increase/decrease $\alpha$?
 

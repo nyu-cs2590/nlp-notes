@@ -84,6 +84,8 @@ Why is language hard? What are prominent features of NLP compared to other field
 - **Sparsity**: Language has a long tail distribution (e.g., [Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law)). How do we robustly capture rare linguistic phenomena on the long tail?
 - **Ambiguity**: The same word / sentence can be interpreted differently depending on the context, e.g., multi-sense word, PP attachment, sarcasm.
 
+We will see these problems coming up again and again in the rest of this course.
+
 ## Course overview
 We will start with the representation of text, which is inherently discrete and compositional.
 We would like a representation that is both succinct, precise, and flexible.
