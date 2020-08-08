@@ -43,7 +43,9 @@ In general, a $n$-gram model assumes that each token depends on the previous $n-
 
 The MLE estimate of the conditional probabilies are:
 $$
-p(x_i\mid x_{i-k}, \ldots x_{i-1}) = \frac{\text{count}(x_{i-k}, \ldots, x_{i-1}, x_i)}{\sum_{w\in V}\text{count}(x_{i-k}, \ldots, x_{i-1}, w)} \;.
+p_{\text{MLE}}(x_i\mid x_{i-k}, \ldots x_{i-1}) = \frac{\text{count}(x_{i-k}, \ldots, x_{i-1}, x_i)}{\sum_{w\in V}\text{count}(x_{i-k}, \ldots, x_{i-1}, w)}
+= \frac{\text{count}(x_{i-k}, \ldots, x_{i-1}, x_i)}{\text{count}(x_{i-k}, \ldots, x_{i-1})}
+\;.
 $$
 In words, the probability of a token following some context
 is simply the fraction of times we see that token following the context
@@ -96,18 +98,117 @@ Next, let's consider a better solution.
 Instead of allocating a fixed amount of probability mass to the unseen words,
 we can estimate the probability of an unseen word by the probability of words that we've seen once,
 assuming that the frequencies of these words are similar.
-For example, suppose we are drawing from an urn of balls with an unknown number of colors.
-If we have drawn 3 red balls, 4 yellow balls, 1 black ball, and 1 blue ball,
-then the chance that the next ball will be of an unseen color
-can be estimated by the probability of black and blue balls which have occurred once,
+For example, suppose you have arrived on a new planet and want to estimate the probability of different species on this planet.
+So far, you have observed 3 tats, 4 gloins, 1 dido, and 1 bity.
+What is the chance that the next animal you encounter will be of an unseen species?
+We can 
+estimate it by the probability of dido and bity which have occurred once,
 i.e. $(1+1)/(3+4+1+1)=2/9$.
 
 #### Good-Turing smoothing
-Let's consider the problem of estimating the count of a set of objects (e.g. words in the case of language modeling),
-given observations of a subset of these objects.
-Let $N_r$ be the number of objects that have occurred $r$ times.
+Let's consider the problem of estimating the count of species (words in the case of language modeling),
+given observations of a subset of these species.
+Let $N_r$ be the number of species that have occurred $r$ times.
+For example,
+
+| $r$ | species | $N_r$ |
+| --- | ----- | --- |
+| 1 | dido, bity, ... | 10 |
+| 2 | tike, wab, ... | 15 |
+| ... |  ... | ... |
+
+We simulate the scenario with unseen species by cross validation,
+i.e. set aside a subset of objects as the held-out set.
+Now, consider **leave-one-out** cross validation:
+for a dataset of size $M$, we run $M$ experiment where
+each time exactly one object is taken as the held-out set
+and the rest $M-1$ objects form the training set.
+In the $M$ held-out sets, how many objects never occur in their corresponding training set?
+Note that once we move the objects occurring only once in the training set to the held-out set, their counts in the training set would be zero.
+Thus the fraction of held-out objects that never occur in the training set is
+$\frac{N_1}{M}$.
+Similarly, the fraction of held-out objects that occur $k$ times in the training set is
+$\frac{(k+1)N_{k+1}}{M}$.
+Therefore, we estimate the probability of unseen objects by
+$$
+p_0 = \frac{N_1}{M} \;,
+$$
+and the probability of objects that occur $k$ times in the training set by
+$$
+p_k = \frac{(k+1)N_{k+1}}{MN_{k}} \;.
+$$
+We divide by $N_k$ when computing $p_k$ because it could be any one of the $N_k$ species.
+Comparing $p_k$ with the MLE estimate $\frac{k}{M}$,
+we see that Good-Turing smoothing uses an adjusted count
+$c_k = \frac{(k+1)N_{k+1}}{N_k}$.
+For text, usually we have $N_k \gt N_{k+1}$ and $c_k \lt k$,
+i.e. the counts of observed words are discounted and
+some probability mass is allocated to the unseen words.
+
+In practice, Good-Turing estimation is not used directly for n-gram language models because it doesn't combine higher-order models with lower-order ones,
+but the idea of using discounted counts is used in other smoothing techniques.
+
+#### Kneser-Ney smoothing
+Let's now turn to Kneser-Ney smoothing, which is widely used for n-gram language models.
+There are two key ideas in Kneser-Ney smoothing.
+
+First, use absolute discounting.
+In Good-Turing smoothing, we use discounted counts for each n-gram.
+It turns out that in practice the count is often close to 0.75.
+So instead of computing the Good-Turing counts, let's just subtract 0.75 or some constant.
+Take a bigram language model for example, we have
+$$
+p(x_i\mid x_{i-1}) = \frac{\max(\text{count}(x_{i-1}, x_i) - \delta, 0)}{\text{count}(x_{i-1})} \;,
+$$
+where $\delta$ is the discount.
+
+Second, consider versatility when interploating with lower-order models.
+Note that in interplation, lower-order models are crucial only when the higher-order context is rare in our training set.
+As a motivating example,
+consider the bigram "San Francisco".
+Suppose "San Francisco" is a frequenty phrase in our corpus,
+then the word "Francisco" will have high unigram probability,
+however, it almost always occurs after "San".
+In an interplated model, if "San" is in the context, then the bigram model should provide a good estimate;
+if "San" is not in the context and we backoff to the unigram model,
+the MLE estimate would assign large probability to "Francisco",
+which is undersirable.
+Therefore, instead of using the unigram probability of "Francisco",
+we compute the fraction of context followed by it:
+$\frac{\text{number of bigram types ends with "Francisco"}}{\text{total number of bigrams types}}$.
+This can be considered as the versatility of the word as it measures how many distinct context the word can follow (normalized by the total number of context).
+More generally, we have
+$$
+\beta(x_i) = \frac{|\{x\in V\colon \text{count}(x, x_i) > 0\}|}
+{|\{x, x'\in V\colon \text{count}(x, x') > 0\}|} \;.
+$$
+Note that (a) $\beta(w_i)$ is not a probabilty distribution,
+although it is between 0 and 1;
+(b) we count *types*, or unique n-grams, and don't use counts as in the MLE estimate.
+
+Now, putting absolute discount and versatility together, we have
+$$
+p_{\text{KN}}(x_i\mid x_{i-1})
+= \frac{\max(\text{count}(x_{i-1}, x_i) - \delta, 0)}{\text{count}(x_{i-1})}
++ \lambda(x_{i-1})\beta(x_i) \;,
+$$
+where $\lambda(x_{i-1})$ is a normalization constant to make sure that
+$\sum_{x\in V} p_{\text{KN}}(x\mid x_{i-1}) = 1$.
+**Exercise:**
+Show that $\lambda$ depends on the context.
+
+For higher-order models, we can define it recursively as
+$$
+p_{\text{KN}}(x_i\mid x_{i-k}, \ldots, x_{i-1})
+= \frac{\max(\text{count}(x_{i-k}, \ldots, x_i) - \delta, 0)}{\text{count}(x_{i-k}, \ldots, x_{i-1})}
++ \lambda(x_{i-k}, \ldots, x_{i-1})
+p_{\text{KN}}(x_i\mid x_{i-k+1}, \ldots, x_{i-1}) \;.
+$$
 
 
 ## Neural language models
 
 ## Evaluation
+
+## Additional reading
+- Stanley F. Chen and Joshua Goodman. [An empirical study of smoothing techniques for language modeling.](http://u.cs.biu.ac.il/~yogo/courses/mt2013/papers/chen-goodman-99.pdf)
