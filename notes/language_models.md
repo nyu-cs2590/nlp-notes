@@ -194,6 +194,7 @@ p_{\text{KN}}(x_i\mid x_{i-1})
 $$
 where $\lambda(x_{i-1})$ is a normalization constant to make sure that
 $\sum_{x\in V} p_{\text{KN}}(x\mid x_{i-1}) = 1$.
+
 **Exercise:**
 Show that $\lambda$ depends on the context.
 
@@ -205,8 +206,76 @@ p_{\text{KN}}(x_i\mid x_{i-k}, \ldots, x_{i-1})
 p_{\text{KN}}(x_i\mid x_{i-k+1}, \ldots, x_{i-1}) \;.
 $$
 
-
 ## Neural language models
+### Language modeling as a classification task
+In n-gram language models, we model $p(x_i\mid x_{i-k}, \ldots, x_{i-1})$
+by a multinomial distribution.
+If we consider $x_i$ as the label of the input context $x_{i-k}, \ldots, x_{i-1}$,
+this becomes a text classification problem and we can use logistic regression:
+$$
+p(x_i\mid x_{i-k}, \ldots, x_{i-1})
+= \frac{\exp\left [ w_i\cdot\phi(x_{i-k}, \ldots, x_{i-1}) \right ]}
+       {\sum_{j\in|V|}\exp\left [ w_j\cdot\phi(x_{i-k}, \ldots, x_{i-1}) \right ]}
+\;.
+$$
+The main task now is to design the feature extractor $\phi$.
+
+**Exercise:** Design a feature extractor.
+What would be useful features for predicting the next word?
+
+### Feed-forward neural networks
+Before neural networks dominated NLP,
+a lot of effort in building NLP models goes into feature engineering,
+which is basically the exercise you went through above.
+The key idea in neural networks is to directly learn these features instead of manually designing them.
+We have already seen something similar in learned word embeddings:
+we don't necessarily know what each dimension means,
+but we know that it would represent some useful information for predicting words in the context for example.
+
+Now, consider a general binary classification task with raw inputs
+$x=[x_1, \ldots, x_p]$.
+Instead of specifying features $\phi_1(x), \phi_2(x), \ldots$,
+let's learn $k$ intermediate features $h(x) = [h_1(x), \ldots, h_k(x)]$.
+Then we can make predictions based on these features using the score $w^Th(x)$.
+How should we parameterize $h_i$'s then?
+One option is to use a linear function that we're already pretty familiar with:
+$h_i(x) = w_i^Tx$.
+However, the composition of linear functions is still linear,
+so we didn't really gain anything from learning these intermediate features.
+
+The power from neural networks come from its non-linear activation function:
+$$
+h_i(x) = \sigma(w_i^Tx) \;,
+$$
+where $\sigma$ is usually a non-linear, differentiable (for SGD) function.
+Here are some common activation functions:
+```{.python .input}
+%matplotlib inline
+from IPython import display
+from matplotlib import pyplot as plt
+import numpy as np
+
+display.set_matplotlib_formats('svg')
+
+x = np.arange(-4, 4, 0.01)
+plt.plot(x, np.tanh(x), label='tanh')
+plt.plot(x, 1/(1 + np.exp(-x)), label='sigmoid')
+plt.plot(x, np.fmax(x, 0), label='ReLU')
+plt.ylim(-1, 1)
+plt.legend()
+```
+
+Now let's replace our n-gram model with a feed-forward neural network.
+The input are $k$ words in the context.
+Each word is mapped to a dense vector, which is then concatenated together to form a single vector representing the context.
+The last layer is a logistic function that predicts the next word.
+
+![Feed-forward n-gram language model](cat.jpg)
+
+**Exercise:** How can we use a BoW representation in feed-forward neural networks?
+What's the advantage and disadvantage?
+
+### Recurrent neural networks
 
 ## Evaluation
 
