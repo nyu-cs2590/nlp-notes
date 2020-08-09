@@ -236,6 +236,7 @@ Now, consider a general binary classification task with raw inputs
 $x=[x_1, \ldots, x_p]$.
 Instead of specifying features $\phi_1(x), \phi_2(x), \ldots$,
 let's learn $k$ intermediate features $h(x) = [h_1(x), \ldots, h_k(x)]$.
+In neural networks, $h_i$'s are called hidden units.
 Then we can make predictions based on these features using the score $w^Th(x)$.
 How should we parameterize $h_i$'s then?
 One option is to use a linear function that we're already pretty familiar with:
@@ -276,8 +277,23 @@ The last layer is a logistic function that predicts the next word.
 What's the advantage and disadvantage?
 
 ### Recurrent neural networks
+Feed-forward neural language model uses a fixed-length context.
+However, intuitively some words only require a short context to predict, e.g. functional words like "of",
+while others require longer context, e.g. pronouns like "he" and "she".
+So we would like to have a dynamic length of context
+and capture long-range context beyond five words (which is the typical length of context in n-gram models).
+
+Recurrent neural network is a model that captures arbitrarily long context.
+The key idea is to update the hidden units recurrently given new inputs:
+$$
+h_t = \sigma(\underbrace{W^hh_{t-1}}_{\text{previous state}}+\underbrace{W^ix_t}_{\text{new input}})
+\;.
+$$
+Note that the definition of $h_t$ is recurrent,
+thus it incorporates information of all inputs up to time step $t$.
 
 ## Evaluation
 
 ## Additional reading
 - Stanley F. Chen and Joshua Goodman. [An empirical study of smoothing techniques for language modeling.](http://u.cs.biu.ac.il/~yogo/courses/mt2013/papers/chen-goodman-99.pdf)
+- Urvashi Khandelwal, He He, Peng Qi and Dan Jurafsky. [Sharp Nearby, Fuzzy Far Away: How Neural Language Models Use Context.](https://arxiv.org/pdf/1805.04623.pdf)
