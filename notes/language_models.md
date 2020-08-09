@@ -271,7 +271,7 @@ The input are $k$ words in the context.
 Each word is mapped to a dense vector, which is then concatenated together to form a single vector representing the context.
 The last layer is a logistic function that predicts the next word.
 
-![Feed-forward n-gram language model](cat.jpg)
+![Feed-forward n-gram language model](../img/cat.jpg)
 
 **Exercise:** How can we use a BoW representation in feed-forward neural networks?
 What's the advantage and disadvantage?
