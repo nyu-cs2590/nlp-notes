@@ -1,3 +1,5 @@
+.PHONY: clean plots build deploy
+
 build:
 	d2lbook build html
 
@@ -9,3 +11,6 @@ deploy:
 
 clean:
 	rm -rf _build/
+
+plots:
+	cd plots; make all

@@ -379,10 +379,90 @@ This is the key idea in gated RNNs.
 
 Here we describe one variant of RNN with gating,
 the **long-short term memory (LSTM)** architecture.
-You can read about another popular architecture, gated recurrent unit (GRU) in [[D2L 9.1](https://d2l.ai/chapter_recurrent-modern/gru.html)].
+Following our intuition, we would like additional memory to save useful information in the sequence.
+Let's design a memory cell.
+It should update the memory with new information from the current time step when it's important,
+and reset the memory when the information stored in it is no longer useful.
+Let's use $\tilde{c}_t$ to denote the new memory.
+Updating or resetting the memory can be controled by two gates:
+an input gate $i_t$ and a forget gate $f_t$,
+both are vectors whose dimensions are the same as the memory cell.
+We compute the memory cell $c_t$ by
+$$
+c_t = \underbrace{i_t \odot \tilde{c}_t}_{\text{update with new memory}} +
+    \underbrace{f_t \odot c_{t-1}}_{\text{reset old memory}}
+\;,
+$$
+where $\odot$ denotes elementwise multiplication.
+The new memory $\tilde{c}_t$ incorporates information from $x_t$ to the previous hidden state $h_{t-1}$:
+$$
+\tilde{c}_t = \tanh(W_{xc}x_t + W_{hc}h_{t-1}) \;.
+$$
+
+We can think of $i_t$ and and $f_t$ as deciding the proportion of information in $\tilde{c}_t$ and $c_{t-1}$ to incorporate and retain respectively (along each dimension),
+thus their value should be between 0 and 1.
+Further, we make the decision based on past information in the sequence.
+Thus, we define
+$$
+i_t &= \text{sigmoid}(W_{xi}x_t + W_{hi}h_{t-1}) \;,\\
+f_t &= \text{sigmoid}(W_{xf}x_t + W_{hf}h_{t-1}) \;.
+$$
+
+Finally, we can define the current hidden state $h_t$ based on the memory cell $c_t$:
+$$
+h_t &= o_t \odot c_t \;\text{, where} \\
+o_t &= \text{sigmoid}(W_{xo}x_t + W_{ho}h_{t-1}) \;.
+$$
+Here $o_t$ is the output gate controlling how much information to output (for prediction).
+
+Now, it may seem a bit redundant to use an additional memory cell.
+We should be able to directly apply the gating mechnism to the hidden states.
+Indeed, 
+this is the key idea in another popular RNN variant, gated recurrent unit (GRU).
+You can read more about GRUs in [[D2L 9.1](https://d2l.ai/chapter_recurrent-modern/gru.html)].
 
 ## Evaluation
+Like word embeddings, language modeling is not an application by itself.
+It's usually used in downstream tasks like machine translation and speech recognition.
+So an extrinsic evaluation of language models would be to apply them in downstream tasks and measure the improvement voer baseline language models.
+We mainly discuss intrinsic evaluation here.
 
+From an ML perspective, our goal is to minimize the expected loss (NLL in this case).
+By minimizing the average loss on the training data,
+we hope that the model will also have small loss on unseen test data.
+So we can evaluate language models by their **held-out likelihood**,
+i.e. the likelihood of the test data under the language model,
+which can be easily calculated as
+$$
+\ell({D}) = \sum_{i=1}^{|D|} \log p_\theta(x_i\mid x_{1:i-1}) \;,
+$$
+where ${D}$ is the held-out set represented as a long sequence of tokens,
+$\theta$ denotes the parameters of the language model,
+and $x_{1:i-1}$ denotes the $x_1, \ldots, x_{i-1}$.
+
+To evaluate language models, we often use the information-theoretic quantity, **perplexity**,
+which has a nice physical meaning in this context.
+Perplexity can be computed from the held-out likelihood:
+$$
+\text{PPL}(D) = 2^{-\frac{\ell(D)}{|D|}} \;.
+$$
+Here the log-likelihood and PPL must use the same base.
+Note that the exponent is the average NLL loss on the held-out set.
+Lower perplexity corresponds to higher held-out likelihood,
+thus is desirable.
+
+In information theory, perplexity measures how well a distribution predicts a sample,
+and is defined as $2^{H(p)}$ where $H$ is the entropy
+and $p$ is the distribution of the random variable.
+Perplexity can be considered as the expected number of bits needed to encode the value of the random variable. 
+In our case, we do not know the true distribution of text
+and can only estimate it by a language model.
+So we cannot compute $H(p)$,
+instead, what we are computing is the cross-entropy of $p$ (the true distribution)
+and $p_\theta$ (our estimate):
+$-\mathbb{E}_{X\sim p}\log p_\theta(X)\approx -\frac{1}{|D|}\sum_{x_i\in D}\log p_\theta(x_i)$.
+A low-perplexity model can encode the next word using fewer number of bits,
+i.e. it is better at compressing the text.
 
 ## Additional reading
 - Stanley F. Chen and Joshua Goodman. [An empirical study of smoothing techniques for language modeling.](http://u.cs.biu.ac.il/~yogo/courses/mt2013/papers/chen-goodman-99.pdf)
