@@ -1,0 +1,32 @@
+\documentclass[crop,tikz]{standalone}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.misc}
+
+\begin{document}
+
+\include{style}
+
+\begin{tikzpicture}
+
+\node (h0) [vector={red}] at(0,0) {$h_0$};
+
+\foreach \i in {1,...,3}{
+    \pgfmathtruncatemacro\j{\i-1}
+    \node (h\i) [vector={red}] [right=2cm of h\j] {$h_\i$};
+    \node (i\i) [vector] [below=1.5cm of h\i] {$x_\i$};
+    \node (o\i) [vector] [above=1.5cm of h\i] {$o_\i$};
+    \path [arrow] (i\i) -- node [right] {$W_{ih}x_\i$} (h\i);
+    \path [arrow] (h\i) -- node [right] {$W_{ho}h_\i$} (o\i);
+}
+
+\node (h4) [right=2cm of h3] {$\ldots$};
+
+\foreach \i in {0,...,3}{
+    \pgfmathtruncatemacro\j{\i+1}
+    \path [arrow] (h\i) -- node [above] {$W_{hh}h_\i$} (h\j);
+}
+
+\end{tikzpicture}
+\end{document}

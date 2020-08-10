@@ -148,6 +148,8 @@ some probability mass is allocated to the unseen words.
 In practice, Good-Turing estimation is not used directly for n-gram language models because it doesn't combine higher-order models with lower-order ones,
 but the idea of using discounted counts is used in other smoothing techniques.
 
+TODO: demo
+
 #### Kneser-Ney smoothing
 Let's now turn to Kneser-Ney smoothing, which is widely used for n-gram language models.
 There are two key ideas in Kneser-Ney smoothing.
@@ -271,12 +273,39 @@ The input are $k$ words in the context.
 Each word is mapped to a dense vector, which is then concatenated together to form a single vector representing the context.
 The last layer is a logistic function that predicts the next word.
 
-![Feed-forward n-gram language model](../img/cat.jpg)
+![Feed-forward language model](../plots/neural_networks/fflm.svg)
 
 **Exercise:** How can we use a BoW representation in feed-forward neural networks?
 What's the advantage and disadvantage?
 
-### Recurrent neural networks
+#### Backpropogation
+Neural network is just like any other model we have seen,
+so we can learn its parameters by minimizing the average loss using SGD.
+The main challenge here is that the objective function is now non-convex,
+which means that SGD may only lead us to a local optimum.
+However, in practice, we have found that SGD is quite effective for learning neural models.
+
+Here our loss function is negative log-likelihood.
+Let's compute the partial derivative w.r.t. $W_{21}[ij]$ using the chain rule.
+$$
+\frac{\partial \ell}{\partial W_{21}[ij]}
+= \frac{\partial \ell}{\partial s_1[j]}
+  \frac{\partial s_1[j]}{\partial W_{21}[ij]}
+\;,
+$$
+where $s_1[j] = W_{21}[\cdot j]^T e$.
+As an exercise, try to compute $\frac{\partial ell}{\partial W_{11}[ij]}$.
+You will see that it depends on $\frac{\partial \ell}{\partial W_{21}[ij]}$,
+which means that we can reuse previous results if we choose to compute the partial derivatives in a specific order!
+
+In general, we can think of the function to be optimized as a computation graph,
+where the nodes are intermediate results (e.g. $s_1$)
+and the edges are the mapping from the input node to the output node.
+Backpropogation computes partial derivatives in specific orders
+to save computation (think dynamic programming).
+It can be automatically done using modern frameworks such as Tensorflow, PyTorch, and MXNet.
+
+### Recurrent neural networks (RNN)
 Feed-forward neural language model uses a fixed-length context.
 However, intuitively some words only require a short context to predict, e.g. functional words like "of",
 while others require longer context, e.g. pronouns like "he" and "she".
@@ -286,14 +315,76 @@ and capture long-range context beyond five words (which is the typical length of
 Recurrent neural network is a model that captures arbitrarily long context.
 The key idea is to update the hidden units recurrently given new inputs:
 $$
-h_t = \sigma(\underbrace{W^hh_{t-1}}_{\text{previous state}}+\underbrace{W^ix_t}_{\text{new input}})
+h_t = \sigma(\underbrace{W_{hh}h_{t-1}}_{\text{previous state}}+
+\underbrace{W_{ih}x_t}_{\text{new input}})
 \;.
 $$
 Note that the definition of $h_t$ is recurrent,
 thus it incorporates information of all inputs up to time step $t$.
 
+![Recurrent language model](../plots/neural_networks/rnn.svg)
+:label:`fig_rnnlm`
+
+Note that we can obtain the probability distribution of the next word
+using a softmax transformation of the output in :numref:`fig_rnnlm`:
+$$
+p(\cdot\mid x_1,\ldots,x_{t-1}) = \text{softmax}(o_t) \;.
+$$
+
+#### Backpropogation through time
+How do we do backpropogation on RNNs?
+If $h_t$ is not recurrent, e.g. it only depends on the input $x_t$,
+then the procedure is the same as feed forward neural networks.
+The fact that $h_t$ now depends on $h_{t-1}$ and they depend on same parameters
+complicates the computation.
+
+Let's focus on the partial derivative $\frac{\partial h_t}{\partial W_{hh}[ij]}$.
+(The rest can be easily computed, same as in feed forward neural networks.)
+$$
+\underbrace{\frac{\partial h_t}{\partial W_{hh}[ij]}}_{d_t} &=
+\frac{\partial}{\partial W_{hh}[ij]} \sigma(
+    \underbrace{W_{hh}h_{t-1}+W_{ih}x_t}_{s}) \\
+&= \frac{\partial \sigma}{\partial s} \frac{\partial s}{\partial W_{hh}[ij]} \\
+&= \frac{\partial \sigma}{\partial s} \left ( 
+        h_{t-1} + W_{hh}\underbrace{\frac{\partial h_{t-1}}{\partial W_{hh}[ij]}}_{d_{t-1}}
+    \right )
+\;.
+$$
+Now that we have written the derivative $d_t:=\frac{\partial h_t}{\partial W_{hh}[ij]}$
+in a recurrent form,
+we can easily compute it. 
+
+However, there are several practical problems.
+If you expand the recurrent formula,
+you will see that it involves repreated multiplication of $W_{hh}$.
+Why is this bad?
+First, it's expensive (both time and space).
+Second, with large powers of $W_{hh}$,
+the gradient *vanishes* if its eigenvalues are less than 1
+and *explodes* if they are greater than 1.
+Two quick ways to fix the problmes are:
+First, truncate the backpropogation after $k$ steps,
+i.e. we assume that $h_{t-k}$ does not depend on previous states.
+This is usually achieved by `detach` in deep learning frameworks.
+Second, we might want to clip the gradient to avoid exploding gradient.
+
+#### Gated recurrent neural networks
+Now, let's try to fix the gradient vanishing/exploding problem from a modeling perspective.
+Note that in RNN the information in previous states influence future states only through $W_{hh}$.
+The gradient explodes when an input has large impact on a distant output,
+i.e. there is long-range dependency.
+Similarly, the gradient may vanish when an input is irrelevant.
+Thus it would be desirable to have some mechanism to decide when to "memorize" a state and when to "forget" it.
+This is the key idea in gated RNNs.
+
+Here we describe one variant of RNN with gating,
+the **long-short term memory (LSTM)** architecture.
+You can read about another popular architecture, gated recurrent unit (GRU) in [[D2L 9.1](https://d2l.ai/chapter_recurrent-modern/gru.html)].
+
 ## Evaluation
+
 
 ## Additional reading
 - Stanley F. Chen and Joshua Goodman. [An empirical study of smoothing techniques for language modeling.](http://u.cs.biu.ac.il/~yogo/courses/mt2013/papers/chen-goodman-99.pdf)
 - Urvashi Khandelwal, He He, Peng Qi and Dan Jurafsky. [Sharp Nearby, Fuzzy Far Away: How Neural Language Models Use Context.](https://arxiv.org/pdf/1805.04623.pdf)
+- Andrej Karpathy. [The Unreasonable Effectiveness of Recurrent Neural Networks.](http://karpathy.github.io/2015/05/21/rnn-effectiveness/)

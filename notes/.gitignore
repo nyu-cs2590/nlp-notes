@@ -1,0 +1,4 @@
+plot/*/*.aux
+plot/*/*.pdf
+plot/*/*.svg
+plot/*/*.log
