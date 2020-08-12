@@ -261,6 +261,7 @@ since $x_i$ are binary now.
 The rest is the same.
 
 ## Feature extractor
+:label:`sec_feature_extractor`
 Looking at the word counts in our BoW feature vector above,
 clearly, we don't have very informative features.
 In addition, only considering single words (**unigram**)
@@ -278,13 +279,13 @@ One advantage of using logistic regression instead of Naive Bayes is that it all
 For example, we can define the following functions
 given an input $x$ of $n$ tokens with label $y$:
 $$
-\phi_1(x, y) &= \begin{cases}
-1 & \text{if $y=1$ and $\exists x_i\in \{x_1,\ldots x_n\}$ such that $x_i=$"happy"} \\
+\phi_1(x) &= \begin{cases}
+1 & \text{$\exists x_i\in \{x_1,\ldots x_n\}$ such that $x_i=$"happy"} \\
 0 & \text{otherwise}
 \end{cases} ,
 \\
-\phi_2(x, y) &= \begin{cases}
-1 & \text{if $y=1$ and $\exists x_i\in \{x_1,\ldots x_n\}$ such that $\text{suffix}(x_i, 4)=$"yyyy"} \\
+\phi_2(x) &= \begin{cases}
+1 & \text{$\exists x_i\in \{x_1,\ldots x_n\}$ such that $\text{suffix}(x_i, 4)=$"yyyy"} \\
 0 & \text{otherwise}
 \end{cases} ,
 $$
