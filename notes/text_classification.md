@@ -223,7 +223,7 @@ How are we going to represent a piece of text?
 If we want the representation the whole sequence it's going to be challenging (an exponentially large set).
 Following our intuition, it may be sufficient to just consider individual words for our task.
 The BoW representation is a vector $x = (1, x_1, \ldots, x_d)$ where $x_i \in \mathbb{N}$.
-Each dimension corresponds to a unique word in the vocabulary,
+Each coordinate corresponds to a unique word in the vocabulary,
 thus $d$ is the vocabulary size here.
 Note that the first dimensition corresponds to the bias term.
 The value $x_i$ is the count of the $i$-th word in the input text. 
@@ -252,10 +252,10 @@ print([(vocab.idx_to_token[i], int(x[i])) for i in ids])
 **Side note.** Note that here the feature vector is different from the one we used for the Naive Bayes model.
 In :numref:`sec_nb`, our effective feature vector (we didn't need to explicit represent it then)
 is a sequence of words in the input,
-thus its dimension varies across examples,
+thus its length varies across examples,
 whereas here the feature vector has a fixed dimension of the vocabulary size.
 In fact, we can also use this feature vector for Naive Bayes,
-where each dimension $x_i$ corresponds to the whether the $i$-th word in the *vocabulary* occurs in the input.
+where each coordinate $x_i$ corresponds to the whether the $i$-th word in the *vocabulary* occurs in the input.
 But then we will need to model $p(x\mid y)$ using a binomial distribution
 since $x_i$ are binary now.
 The rest is the same.

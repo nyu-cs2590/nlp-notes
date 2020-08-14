@@ -3,3 +3,7 @@ plots/*/*.aux
 plots/*/*.pdf
 plots/*/*.svg
 plots/*/*.log
+plots/*.aux
+plots/*.pdf
+plots/*.svg
+plots/*.log

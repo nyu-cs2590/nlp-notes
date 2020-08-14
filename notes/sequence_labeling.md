@@ -22,8 +22,8 @@ Therefore, the model must take context into consideration.
 
 ## A multiclass classification approach
 Our second try is to formulate this as a classification problem which we already know how to solve.
-Let $x=(x_1, \ldots, x_m) \in\mathcal{X}$ be the input sequence of tokens,
-and $y=(y_1, \ldots, y_m)$ be the tag sequence where $y_i\in\mathcal{Y}$.
+Let $x=(x_1, \ldots, x_m) \in\mathcal{X}^m$ be the input sequence of tokens,
+and $y=(y_1, \ldots, y_m) \in \mathcal{Y}^m$ be the tag sequence.
 We want a multiclass classifier $f$ such that:
 $$
 f(x, i) = y_i \;.
@@ -35,8 +35,6 @@ f(x, i) &= \arg\max_{k\in\mathcal{Y}} p(k\mid \phi(x,i)) \\
 {\sum_{k'\in\mathcal{Y}}  \exp\left [ w_{k'}\cdot\phi(x,i) \right ] }
 \;.
 $$
-:eqlabel:`eq_mlr`
-
 
 Now, what should be the features $\phi(x, i)$?
 We can design feature extractors similar to what we have used for text classifcation in :numref:`sec_feature_extractor`.
@@ -64,7 +62,7 @@ we design features for $(x,i,y)$
 that suggests how "compatible" are the input and a specific label.
 A good model should assign the highest score to the gold label $y_i$:
 $w\cdot\phi(x,i,y_i) \ge w\cdot\phi(x,i,y')$ for all $y'\neq y_i$.
-Note that now we only need to deal with one weight vector $w$ instead of $|\mathcal{Y}|$ vectors as in :eqref:`eq_mlr`.
+Note that now we only need to deal with one weight vector $w$ instead of $|\mathcal{Y}|$ vectors.
 Now, if we take the original feature vector $\phi$,
 copy it $|\mathcal{Y}|$ times, and concatenate them,
 where the $k$-th copy corresponds to $\phi(x,i,k)$,
@@ -106,9 +104,8 @@ which is the topic of interest in structured prediction.
 In the multiclass classification approach,
 we decompose the sequence labeling problem to independent classification problems.
 Now, let's directly tackle the prediction problem where
-the input is $x\in\mathcal{X}$ and
-the output is $y\in\mathcal{Y}$.
-Note that now the output space $\mathcal{Y}$ contains sequences instead of categorical labels.
+the input is $x\in\mathcal{X}^m$ and
+the output is $y\in\mathcal{Y}^m$.
 This is called structured prediction because the output is structured,
 e.g. a sequence in our case.
 
@@ -118,14 +115,18 @@ the feature vector now depends on the entire output sequence $y$.
 Let's use $\Phi(x,y)$ to denote the global feature vector that depends on $y$.
 We extend multinomial logistic regression to structured prediction:
 $$
-f(x) &= \arg\max_{y\in\mathcal{Y}} p(y\mid x) \\
-&= \arg\max_{y\in\mathcal{Y}} \frac{\exp\left [ w\cdot\Phi(x,y) \right ]}
-{\sum_{y'\in\mathcal{Y}}  \exp\left [ w\cdot\Phi(x,y') \right ] }
-\;.
+f(x) &= \arg\max_{y\in\mathcal{Y}^m} p(y\mid x) \\
+&= \arg\max_{y\in\mathcal{Y}^m} \frac{\exp\left [ w\cdot\Phi(x,y) \right ]}
+{\sum_{y'\in\mathcal{Y}^m}  \exp\left [ w\cdot\Phi(x,y') \right ] } \\
+&= \arg\max_{y\in\mathcal{Y}^m} \frac{\exp\left [ w\cdot\Phi(x,y) \right ]}
+{Z(w)}
+\;,
 $$
-This model is called a **conditional random field (CRF)**.
-The name comes from probabilistic graphical models:
-it's a Markov random field (MRF) conditioned on observed variables (input $X$).
+where $Z(w)$ is the normalizer, also called the partition function.
+This is one example of **conditional random fields (CRF)**,
+specifically a linear-chain CRF.
+The name comes from graphical models:
+CRF is a Markov random field (MRF) conditioned on observed variables (input $X$).
 
 The next natural question is how to define $\Phi(x,y)$.
 We want it to capture dependencies among the outputs.
@@ -139,7 +140,7 @@ we would like to have *decomposable* feature vectors.
 Let's design the global feature vector $\Phi(x,y)$ such that it can be computed from *local* feature vectors that depend on $y_i$ and its neighbors.
 For each feature $\Phi_j$, we have
 $$
-\Phi_j(x,y) = \sum_{i=1}^m \phi_j(x, i, y_i, y_{i-1}) \;.
+\Phi_j(x,y) = \sum_{i=1}^{m} \phi_j(x, i, y_i, y_{i-1}) \;.
 $$
 We can then create features in the same way as we did for tag classification, e.g.
 $$
@@ -149,10 +150,161 @@ $$
 \end{cases} \;,
 $$
 
-### Learning
+### Inference: the Viterbi algorithm
+Now, suppose we have a learned model (i.e. known $w$).
+To tag a sentence,
+we need to find the sequence that maximizes $p(y\mid x; w)$.
+This process of finding the argmax output is also called **decoding**.
+Note that
+$$
+\arg\max_{y\in\mathcal{Y}^m} p(y\mid x;w) &= \arg\max_{y\in\mathcal{Y}^m}
+    \frac{\exp\left [ w\cdot\Phi(x,y) \right ]}
+        {Z(w)} \\
+&= \arg\max_{y\in\mathcal{Y}^m} \exp\left [ w\cdot\Phi(x,y) \right ] \\
+&= \arg\max_{y\in\mathcal{Y}^m} w\cdot\sum_{i=1}^{m} \phi(x, i, y_i, y_{i-1}) \\
+&= \arg\max_{y\in\mathcal{Y}^m} \sum_{i=1}^{m} w\cdot\phi(x, i, y_i, y_{i-1})
+\;.
+$$
 
-### Inference
+Let's first consider how to compute the max score (without finding the corresponding paths).
+Note that the local score of $y_i$ only depends on the previous label $y_{i-1}$.
+If we know the score of all sequences of length $i-1$, then it is easy to compute the score of a sequence of length $i$.
+Specifically, let $s(j, t)$ be the score of a sequence of length $j$ ending with the tag $y_j=t\in\mathcal{Y}$.
+Then
+$$
+s(j+1, t') = \sum_{t\in\mathcal{Y}} s(j, t) +
+    \underbrace{w\cdot\phi(x, j+1, t', t)}_{y_j=t, y_{j+1}=t'} \;.
+$$
+Thus the maximum score for a sequence of length $j+1$ is
+$$
+\max_{t'\in\mathcal{Y}} s(j+1, t') \;.
+$$
+Let's augment a $\texttt{STOP}$ symbol to our sequence,
+then the maximum score of all possible sequences in $\mathcal{Y}^m$ is
+$$
+\max s(m+1, \texttt{STOP}) \;.
+$$
 
+We can compute the scores $s(j, t)$ on a lattice as shown in :numref:`fig_viterbi`.
+Each column corresponds to a position in the sequence
+and each row corresponds to a tag.
+A sequence can be represented by a path connecting the nodes.
+Each node saves the score of all paths ending at that node, i.e. $s(j, t)$.
+It's easy to trace the sequence achieving the maximum score by
+saving an additional backpointer at each node:
+$$
+\text{backpointer}(j, t) = \arg\max_{t'\in\mathcal{Y}} s(j-1, t') + w\cdot\phi(x, j, t, t') \;.
+$$
+
+![An example of Viterbi decoding](../plots/sequence/viterbi.svg)
+:label:`fig_viterbi`
+
+This is called the Viterbi algorithm.
+It is essentially dynamic programming
+and has a polynomial running time of $O(m|\mathcal{Y}|^2)$.
+
+### Learning: the forward-backward algorithm
+Same as in logistic regression, we do MLE to find the parameters.
+The log-likelihood of a dataset $\{(x^{(i)}, y^{(i)})\}_{i=1}^N$ is
+$$
+\ell(w) = \sum_{i=1}^N \log p(y^{(i)}\mid x^{(i)})
+\;.
+$$
+In practice, it's important to use regularziation to prevent overfitting,
+so let's also add $\ell_2$ regularization to our objective.
+$$
+\ell(w) = \sum_{i=1}^N \log p(y^{(i)}\mid x^{(i)}) - \lambda \|w\|^2_2
+\;,
+$$
+where $\lambda$ is a hyperparameter controlling the strenght of regularization.
+
+Let's plug in our log-linear model:
+$$
+\ell(w) &= \sum_{i=1}^N \log 
+        \frac{\exp\left [ w\cdot\Phi(x,y) \right ]}
+            {Z(w)}
+    - \lambda \|w\|^2_2 \\
+&= \sum_{i=1}^N
+        w\cdot\Phi(x,y) -
+        \log Z(w) 
+    - \lambda \|w\|^2_2
+$$
+
+Take derivative w.r.t. $w_k$
+(note that $Z(w) = \sum_{u\in\mathcal{Y}^m} \exp\left [ w\cdot\Phi(x,u) \right ]$):
+$$
+\frac{\partial}{\partial w_k}\ell(w) &= \sum_{i=1}^N
+    \Phi_k(x,y) -
+    \frac{\sum_{u\in\mathcal{Y}^m} \exp\left [ w\cdot\Phi(x,u) \right ] \Phi_k(x,u)}
+        {Z(w)}
+    - 2\lambda w_k \\
+&= \sum_{i=1}^N \Phi_k(x,y) - 
+   \sum_{i=1}^N \underbrace{ \sum_{u\in\mathcal{Y}^m} p(u\mid x; w) \Phi_k(x, u) }_{\text{feature expectation}}
+    - 2\lambda w_k
+$$
+
+**Side note:**
+If we ignore the regularization term, at the optimal solution (gradient is zero)
+we have
+$$
+\sum_{i=1}^N \Phi_k(x,y) &= \sum_{i=1}^N \sum_{u\in\mathcal{Y}^m} p(u\mid x; w) \Phi_k(x, u) \\
+\frac{1}{N}\sum_{i=1}^N \Phi_k(x,y) &= \mathbb{E}\left [ \Phi_k(x, u) \right ]
+\;,
+$$
+which means that the expected feature value taken over $p(y\mid x;w)$
+is equal to the average feature value of the observed data.
+
+Let's now focus on computing the feature expectation.
+$$
+& \sum_{u\in\mathcal{Y}^m} p(u\mid x; w) \Phi_k(x, u) \\
+&= \sum_{u\in\mathcal{Y}^m} p(u\mid x; w) \sum_{j=1}^m \phi_k(x, j, u_{j}, u_{j-1}) \\
+&= \sum_{i=1}^m \sum_{a,b\in\mathcal{Y}} \sum_{u\in\mathcal{Y}^m\colon\\ u_{j-1}=a, u_j=b} 
+    p(u\mid x; w) \phi_k(x, j, u_{j}, u_{j-1}) \\
+&= \sum_{i=1}^m \sum_{a,b\in\mathcal{Y}}
+    \underbrace{p(u_{j-1}=a, u_j=b \mid x; w)}_{\text{tag bigram marginal probability}} 
+    \phi_k(x, j, u_{j}, u_{j-1})
+\;.
+$$
+Note that the two sums and $\phi_k$ are easy to compute.
+So our main task is to compute the marginal probability.
+We need to sum over all prefix up to $u_{j-1}$
+and all suffix after $u_{j}$,
+where $u_{j-1}=a$ and $u_j=b$.
+$$
+p(u_{j-1}=a, u_j=b \mid x; w) = \frac{1}{Z(w)}
+    \underbrace{\sum_{u_{1:j-1}\in\mathcal{Y}^{j-1}}}_{\text{prefix}}
+    \underbrace{\sum_{u_{j+1:m}\in\mathcal{Y}^{m-j}}}_{\text{suffix}}
+    \prod_{i=1}^m \exp\left [ w\cdot\phi_k(x,j,b,a) \right ]
+$$
+
+Ignoring the normalizer $Z(w)$ for now,
+the sum can be computed in a way very similar to the viterbi algorithm.
+Suppose we know the score of all prefix of length $j-1$ ending at the tag $a$,
+$\alpha(j-1, a)$,
+as well as the score of all suffix of length $m-j$ starting from the tag $b$,
+$\beta(m-j, b)$,
+we can easily compute
+$$
+& \sum_{u_{1:j-1}\in\mathcal{Y}^{j-1}} \sum_{u_{j+1:m}\in\mathcal{Y}^{m-j}}
+    \prod_{i=1}^m \exp\left [ w\cdot\phi_k(x,j,b,a) \right ] \\
+&= \alpha(j-1, a) \times \exp\left [ w\cdot\phi_k(x,j,b,a) \right ] \times \beta(m-j, b)
+\;.
+$$
+How do we compute $\alpha$ and $\beta$?
+Note that $\alpha(j, t)$ is exactly $\exp s(j, t)$ which we computed in the Viterbi algorithm when finding the maximum score,
+and $\beta(j, t)$ can be computed similarly *backward* on the lattice.
+The final missing piece is $Z(w)$, but this is just $\alpha(m+1, \texttt{STOP})$.
+Once we have the forward scores and the backward scores,
+which can be computed in $O(m|\mathcal{Y}|^2)$,
+the gradient can be computed easily.
+
+**Backpropogation.**
+Note that the lattice can also be viewed as a computation graph.
+In the forward pass, each node computes the forward score by summing outputs from previous nodes and the local score. 
+In the backward pass, each node receives gradient from nodes in the subsequent position.
+This is basically what forward-backward is doing.
+In modern machine learning framworks, this is done through backpropogation (auto differentiation),
+so we just need to implement the forward pass.
 
 ## Neural sequence labeling
 
