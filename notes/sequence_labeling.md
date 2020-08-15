@@ -11,9 +11,9 @@ The input a sequence of tokens (in a sentence),
 and we want to tag each token by its grammatical category
 such as nouns and verbs.
 For example,
-```
-Language/NOUN is/VERB fun/ADJ ./PUNCT
-```
+
+Language/`NOUN` &emsp;is/`VERB`&emsp; fun/`ADJ`&emsp; ./`PUNCT`
+
 A first thought might be to simply build a word-to-tag dictionary.
 However, many words can be assigned multiple tags depending on the context.
 In the above example, "fun" can be either a noun (as in "have fun")
@@ -21,6 +21,7 @@ or an adjective (as in "a fun evening").
 Therefore, the model must take context into consideration.
 
 ## A multiclass classification approach
+:label:`sec_tag_classification`
 Our second try is to formulate this as a classification problem which we already know how to solve.
 Let $x=(x_1, \ldots, x_m) \in\mathcal{X}^m$ be the input sequence of tokens,
 and $y=(y_1, \ldots, y_m) \in \mathcal{Y}^m$ be the tag sequence.
@@ -122,11 +123,7 @@ f(x) &= \arg\max_{y\in\mathcal{Y}^m} p(y\mid x) \\
 {Z(w)}
 \;,
 $$
-where $Z(w)$ is the normalizer, also called the partition function.
-This is one example of **conditional random fields (CRF)**,
-specifically a linear-chain CRF.
-The name comes from graphical models:
-CRF is a Markov random field (MRF) conditioned on observed variables (input $X$).
+where $Z(w)$ is the normalizer.
 
 The next natural question is how to define $\Phi(x,y)$.
 We want it to capture dependencies among the outputs.
@@ -149,6 +146,28 @@ $$
 0 & \text{otherwise}
 \end{cases} \;,
 $$
+
+Using the local feature vectors, our model can be written as
+$$
+p(y\mid x) = \frac{1}{Z(w)}\prod_{i=1}^m \psi(y_i, y_{i-1}\mid x, w)
+\;,
+$$
+where
+$$
+\psi(y_i, y_{i-1}\mid x, w) = \exp\left [
+        w \cdot \phi(x,i,y_i,y_{i-1})
+    \right ]
+\;.
+$$
+This is one example of **conditional random fields (CRF)**,
+specifically a chain-structured CRF.
+The name comes from graphical models:
+CRF is a Markov random field (MRF) conditioned on observed variables (input $X$).
+Using terms in graphical models,
+$Z(w)$ is the potential function,
+$\psi$ is the potential function or the factor
+for each clique $y_i, y_{i-1}$.
+Thus we have interaction for adjacent variables on the chain.
 
 ### Inference: the Viterbi algorithm
 Now, suppose we have a learned model (i.e. known $w$).
@@ -196,7 +215,7 @@ $$
 \text{backpointer}(j, t) = \arg\max_{t'\in\mathcal{Y}} s(j-1, t') + w\cdot\phi(x, j, t, t') \;.
 $$
 
-![An example of Viterbi decoding](../plots/sequence/viterbi.svg)
+![An example of Viterbi decoding](../plots/sequence/viterbi.pdf)
 :label:`fig_viterbi`
 
 This is called the Viterbi algorithm.
@@ -307,10 +326,98 @@ In modern machine learning framworks, this is done through backpropogation (auto
 so we just need to implement the forward pass.
 
 ## Neural sequence labeling
+Now, let's think about how to use neural networks for sequence labeling.
+The core ideas are pretty much the same,
+and we just need to replace handcrafted features with embeddings from neural networks.
+
+### The classification approach: bidirectional RNN
+We can easily use neural networks in the classification approach
+where each tag is predicted independently as in :numref:`sec_tag_classification`.
+The first thought is to use a RNN (:numref:`sec_rnn`) and take the hidden state at each position to be the features used for classification.
+However, $h_i$ only summarizes information in $x_{1:i-1}$.
+For sequence labeling, ideally we want to use the entire sequence for classification.
+The solution is to use a bidirectional RNN (:numref:`fig_birnn`).
+One RNN runs forward from $x_1$ to $x_m$ and produces $\overrightarrow{h}_{1:m}$,
+and the other runs backward from $x_m$ to $x_1$ and produces $\overleftarrow{h}_{1:m}$.
+We then concatenate the two hidden states: $h_i=[\overrightarrow{h}_{1:m}; \overleftarrow{h}_{1:m}]$,
+and compute the score $\psi(y_i)=\exp\left [ Wh+b \right ]$.
+
+![Bidirectional RNN](../plots/neural_networks/birnn.pdf)
+:label:`fig_birnn`
+
+Compared to feature-based classification, with RNNs it's easier to incorporate more context in the input sentence.
+However, we are still prediction the tags independently.
+One way to add dependence among output tags is to add the previously predicted tag $y_{i-1}$
+as an additional input when computing $\overrightarrow{h}_i$,
+which allows us to model $p(y_i\mid x, y_{1:i-1})$.
+However, one problem here is that during training, we always condition on the ground truth tags $y_{1:i-1}$,
+whereas at inference time we condition on the predicted tags $\hat{y}_{1:i-1}$,
+so the distribution of the conditioning variables will change at test time.
+This is called the **exposure bias** problem,
+which we will encounter again in neural sequence generation.
+
+One solution is to use a CRF in the last layer where
+$$
+\psi(y_i,y_{i-1}) = \exp\left [
+        \underbrace{W_{y_i,y_{i-1}} h_i}_{\text{tag bigram score}} +
+        \underbrace{W_{y_i} h_i}_{\text{tag unigram score}} +
+        \underbrace{b_{y_i,y_{i-1}}}_{\text{bias term}}
+    \right ]
+\;.
+$$
+Note that the only difference compared to the classic CRF is that we are now using the hidden states $h_i$ as feature
+as opposed to manually defined local feature vector $\phi$.
+
+Training the RNN-CRF model is easy using modern deep learning frameworks
+powerd by auto differentiation.
+We just need to implement the forward pass to compute $p(y\mid x)$.
+At inference time, the sequence with the highest likelihood can be found by Viterbi decoding.
 
 ## Applications
-The input can be images as well, e.g. handwritten digit recognition.
-Sometimes a task may not look like a sequence labeling tasks immediately,
-but we can formulate it as one.
+**Named entity recognition (NER).**
+An important task in information extraction is to extract named entities in the text.
+For example, in news articles,
+we are interested in people (John), locations (New York City),
+organization (NYU), date (September 10th) etc.
+In other domains such as biomedical articles,
+we might want to extract protein names and cell types.
+Here's one example:
+
+$\underbrace{\text{New York City}}_{\text{location}}$,
+often abbreviated as $\underbrace{\text{NYC}}_{\text{location}}$,
+is the most populous city in the $\underbrace{\text{United States}}_{\text{location}}$, 
+with an estimated $\underbrace{\text{2019}}_{\text{year}}$
+population of $\underbrace{\text{8,336,817}}_{\text{number}}$.
+
+Note that this is not immediately a sequence labeling problem
+since we are extracting spans from the input text.
+The standard approach to convert this to a sequence labeling problem is to use the **BIO notation**.
+The first token in a span is labeled as `B-<tag>` where `<tag>` is the label of the span.
+Other tokens in the span are labeled as `I-<tag>`
+and tokens outside any span are labeled as `O`.
+For example,
+
+... the/`O` &ensp; most/`O` &ensp;populous/`O` &ensp;city/`O` &ensp;in/`O` &ensp;the/`O`
+&ensp;United/`B-location` &ensp;States/`I-location`, ...
+
+The BIO labeling scheme can be used whenever we want to extract spans from the text,
+e.g. noun phrase chunking and slot prediction in task-oriented dialogue.
+
+**Chinese word segmentation.**
+As we mentioned previously, in many writing systems words are not separated by white spaces and one example is Chinese.
+A naive approach is to use a dictionary and greedily separate words that occur in the dictionary.
+However, there are often multiple ways to segment a sentence if we only require each token is a valid word.
+For example,
+
+研究/study &emsp;  生命/life  &emsp; 的/'s  &emsp; 起源/origin
+
+研究生/graduate student &emsp; 命/life &emsp; 的/'s &emsp; 起源/origin
+
+Therefore, the problem is often solved as a supervised sequence labeling problem.
+We can label each character by either `START` (beginning of a word) or `NONSTART`.
+
+Finally, the input doesn't have to be sequence of words.
+For example, in handwritten digit recognition,
+the input are sequences of images.
 
 

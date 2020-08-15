@@ -273,7 +273,7 @@ The input are $k$ words in the context.
 Each word is mapped to a dense vector, which is then concatenated together to form a single vector representing the context.
 The last layer is a logistic function that predicts the next word.
 
-![Feed-forward language model](../plots/neural_networks/fflm.svg)
+![Feed-forward language model](../plots/neural_networks/fflm.pdf)
 
 **Exercise:** How can we use a BoW representation in feed-forward neural networks?
 What's the advantage and disadvantage?
@@ -306,6 +306,7 @@ to save computation (think dynamic programming).
 It can be automatically done using modern frameworks such as Tensorflow, PyTorch, and MXNet.
 
 ### Recurrent neural networks (RNN)
+:label:`sec_rnn`
 Feed-forward neural language model uses a fixed-length context.
 However, intuitively some words only require a short context to predict, e.g. functional words like "of",
 while others require longer context, e.g. pronouns like "he" and "she".
@@ -316,13 +317,13 @@ Recurrent neural network is a model that captures arbitrarily long context.
 The key idea is to update the hidden units recurrently given new inputs:
 $$
 h_t = \sigma(\underbrace{W_{hh}h_{t-1}}_{\text{previous state}}+
-\underbrace{W_{ih}x_t}_{\text{new input}})
+\underbrace{W_{ih}x_t}_{\text{new input}} + b_h)
 \;.
 $$
 Note that the definition of $h_t$ is recurrent,
 thus it incorporates information of all inputs up to time step $t$.
 
-![Recurrent language model](../plots/neural_networks/rnn.svg)
+![Recurrent language model](../plots/neural_networks/rnn.pdf)
 :label:`fig_rnnlm`
 
 Note that we can obtain the probability distribution of the next word
@@ -396,7 +397,7 @@ $$
 where $\odot$ denotes elementwise multiplication.
 The new memory $\tilde{c}_t$ incorporates information from $x_t$ to the previous hidden state $h_{t-1}$:
 $$
-\tilde{c}_t = \tanh(W_{xc}x_t + W_{hc}h_{t-1}) \;.
+\tilde{c}_t = \tanh(W_{xc}x_t + W_{hc}h_{t-1} + b_c) \;.
 $$
 
 We can think of $i_t$ and and $f_t$ as deciding the proportion of information in $\tilde{c}_t$ and $c_{t-1}$ to incorporate and retain respectively (along each dimension),
@@ -404,14 +405,14 @@ thus their value should be between 0 and 1.
 Further, we make the decision based on past information in the sequence.
 Thus, we define
 $$
-i_t &= \text{sigmoid}(W_{xi}x_t + W_{hi}h_{t-1}) \;,\\
-f_t &= \text{sigmoid}(W_{xf}x_t + W_{hf}h_{t-1}) \;.
+i_t &= \text{sigmoid}(W_{xi}x_t + W_{hi}h_{t-1} + b_i) \;,\\
+f_t &= \text{sigmoid}(W_{xf}x_t + W_{hf}h_{t-1} + b_f) \;.
 $$
 
 Finally, we can define the current hidden state $h_t$ based on the memory cell $c_t$:
 $$
 h_t &= o_t \odot c_t \;\text{, where} \\
-o_t &= \text{sigmoid}(W_{xo}x_t + W_{ho}h_{t-1}) \;.
+o_t &= \text{sigmoid}(W_{xo}x_t + W_{ho}h_{t-1} + b_o) \;.
 $$
 Here $o_t$ is the output gate controlling how much information to output (for prediction).
 

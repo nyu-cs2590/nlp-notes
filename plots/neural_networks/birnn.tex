@@ -1,0 +1,41 @@
+\documentclass[crop,tikz]{standalone}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.misc}
+
+\begin{document}
+
+\include{style}
+
+\begin{tikzpicture}
+
+\node (h0) at(0,0) {$\ldots$};
+\node (bh0) [above=1cm of h0] {$\ldots$};
+
+\foreach \i in {1,...,3}{
+    \pgfmathtruncatemacro\j{\i-1}
+    \node (h\i) [vector={red}] [right=2cm of h\j] {$\overrightarrow{h}_\i$};
+    \node (i\i) [vector] [below=1cm of h\i] {$x_\i$};
+    \node (bh\i) [vector={red}] [right=2cm of bh\j] {$\overleftarrow{h}_\i$};
+    \node (c\i) [vector] [above=1cm of bh\i] {$[\overrightarrow{h}_\i;\overleftarrow{h}_\i]$};
+    \node (o\i) [vector] [above=1cm of c\i] {$\psi(y_\i)$};
+    \path [arrow] (i\i) -- (h\i);
+    \path [arrow] (h\j) -- (h\i);
+    \path [arrow] (bh\i) -- (bh\j) ;
+    \path [arrow] (h\i) to [bend left=60] (c\i);
+    \path [arrow] (bh\i) to (c\i);
+    \path [arrow] (c\i) to (o\i);
+}
+
+\node (h4) [right=2cm of h3] {$\ldots$};
+\node (bh4) [right=2cm of bh3] {$\ldots$};
+\path [arrow] (h3) -- (h4);
+\path [arrow] (bh4) -- (bh3);
+
+    \path [arrow,dashed] (o1) to [out=0, in=180] ([yshift=5pt]h2.west);
+    \path [arrow,dashed] (o2) to [out=0, in=180] ([yshift=5pt]h3.west);
+    \path [arrow,dashed] (o3) to [out=0, in=180] ([yshift=5pt]h4.west);
+
+\end{tikzpicture}
+\end{document}
