@@ -2,19 +2,30 @@
 **CSCI-GA 2590, New York University, Fall 2020**
 
 ## Logistics
-- Tentative format: online lectures with in-person discussions
-- Lectures: Tue 7:10pm-9pm (on Zoom)
+- Format: online lectures with (optional) in-person office hours 
+    - Please note that the entire course can be taken *fully online*.
+- Lectures: Tue 7:10pm-9pm EST (on Zoom)
 - Instructor: [He He](https://hhexiy.github.io)
-- TAs: TBD
-- Office hours: TBD
+- TAs:
+    - Shivesh Ganju
+    - Gaomin Wu
+    - Gauri Dhawan
+- Office hours: TBD (online with in-person appointments)
+    - He He
+    - Shivesh Ganju
+    - Gaomin Wu
+- Calender: [subscribe](https://calendar.google.com/calendar/b/3?cid=Y19jdmFnYmJhZWxlZHE4dTV2bDc0MGIwdGhzMEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t) to get up-to-date times on lectures/office hours/due dates/etc.
+- Zoom instruction:
+    - To attend lectures, log on [NYUClasses](https://newclasses.nyu.edu), and click the Zoom tab on the left.
+    - If you are not muted upon entering the room, please mute yourself.
+    - Since it's a large class, questions should be sent to the chat room and the instructor will check and answer them during the class.
+    - Recordings will appear on Zoom a few days (depending on how fast Zoom process it) after the lecture. To watch the videos, go to NYUClasses --> Zoom --> Cloud Recordings.
 
 ## Accessibility
 We try to make all of the course material accessible.
 If you need additional accomadation, please send us an email.
 Please let us know in advance any accomadation needed for assignments (in PDF)
 and the midterm (online).
-
-## Important dates
 
 ## Course information
 How can we teach machines to understand language so that they can answer our queries, extract information from textual data, or even have a conversation with us?
@@ -28,7 +39,7 @@ Students are expected to have solid mathematic background and programming skills
 
 - Probability, statistics, linear algebra (DS-GA.1002, MATH-UA.140, MATH-UA.235) 
 - Algorithms and data structure (CSCI-UA.102)
-- Machine learning (DS-GA.1003, CSCI-UA.0473)
+- Basic knowlege in machine learning (DS-GA.1003, CSCI-UA.0473) will be helpful
 
 ### Resources
 **Textbook:** There is no required textbook. Course notes/slides should be sufficient.
@@ -45,8 +56,6 @@ In the lecture notes, we will use JM, E, G, D2L to refer to the above books resp
 
 - Probability and optimization in the appendix of Eisenstein's book.
 - [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) from DS-GA.1002.
-- [A short guide to linguistics](https://faculty.washington.edu/ebender/100things-sem_prag.html) for NLPers by Bender. 
-
 
 
 ```toc

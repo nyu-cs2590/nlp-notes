@@ -13,6 +13,7 @@ Fortunately, there are plenty of text online, although sometimes we need to be s
     - Tasks where we can get labels for free: language modeling, news summarization etc.
     - Tasks where we need to crowdsource labels: text entailment, reading comprehension etc.
     - Tasks that require expert annotations: constituent parsing, semantic parsing etc.
+
 A famous saying about ML is "garbage in, garbage out": you only get results as good as your data.
 We should always keep in mind that there is noise and biases in the data
 and ML systems are not immune to them.
@@ -85,7 +86,7 @@ L(x, y, f_w(x)) ,
 $$
 where $w$ denotes the parameters of the model $f$.
 
-Here are some common margin-based loss functions for classification.
+Here are some common margin-based loss functions for binary classification.
 Recall that margin is the score for the correct class:
 $yf_w(x)$,
 and a large margin means that the prediction is more correct.
@@ -115,7 +116,7 @@ To measure the performance of the model on the distribution,
 we estimate the expected loss (risk) by averaging over the training examples.
 This gives us the learning objective:
 $$
-\min \frac{1}{N}\sum_{i=1}^N L(x^{(n)}, y^{(n)}, f_w) .
+\min \frac{1}{n}\sum_{i=1}^n L(x^{(i)}, y^{(i)}, f_w) .
 $$
 
 ### Gradient descent
