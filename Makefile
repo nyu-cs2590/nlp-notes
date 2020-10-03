@@ -15,8 +15,14 @@ deploy_nyu_all:
 deploy_nyu_home:
 	scp -r _build/html/*.html hehe@access.cims.nyu.edu:/usr/httpd/htdocs_cs/courses/fall20/CSCI-GA.2590-001/
 
+deploy_nyu_slides:
+	scp -r _build/html/slides/lec04 hehe@access.cims.nyu.edu:/usr/httpd/htdocs_cs/courses/fall20/CSCI-GA.2590-001/slides/
+
 deploy_nyu_notes:
 	scp -r _build/html/notes/*.html hehe@access.cims.nyu.edu:/usr/httpd/htdocs_cs/courses/fall20/CSCI-GA.2590-001/notes/
+
+deploy_nyu_images:
+	scp -r _build/html/_images/* hehe@access.cims.nyu.edu:/usr/httpd/htdocs_cs/courses/fall20/CSCI-GA.2590-001/_images
 
 clean:
 	rm -rf _build/

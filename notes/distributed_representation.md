@@ -150,8 +150,8 @@ Given a $m\times n$ matrix $A$, we want to factorize it into
 $$
 A_{m\times n} = U_{m\times m}\Sigma_{m\times n}V^T_{n\times n} ,
 $$
-where $U$ and $V$ are orthonormal matrices (with trailing zero vectors)
-and $\Sigma$ is a diagonal matrix.
+where $U$ and $V$ are orthogonal matrices
+and $\Sigma$ is a diagonal matrix (with trailing zero vectors).
 
 Let's unpack this equation to understand what it is doing.
 Note that

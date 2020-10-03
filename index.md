@@ -10,10 +10,10 @@
     - Shivesh Ganju
     - Gaomin Wu
     - Gauri Dhawan
-- Office hours: TBD (online with in-person appointments)
-    - He He
-    - Shivesh Ganju
-    - Gaomin Wu
+- Office hours: on Zoom 
+    - He He: Wed 4-5pm EST
+    - Shivesh Ganju: Fri 7-8pm EST
+    - Gaomin Wu: Tue 10-11am EST
 - Calender: [subscribe](https://calendar.google.com/calendar/b/3?cid=Y19jdmFnYmJhZWxlZHE4dTV2bDc0MGIwdGhzMEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t) to get up-to-date times on lectures/office hours/due dates/etc.
 - Zoom instruction:
     - To attend lectures, log on [NYUClasses](https://newclasses.nyu.edu), and click the Zoom tab on the left.
@@ -56,6 +56,7 @@ In the lecture notes, we will use JM, E, G, D2L to refer to the above books resp
 
 - Probability and optimization in the appendix of Eisenstein's book.
 - [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) from DS-GA.1002.
+- Machine learning material from [DS-GA.1003](https://davidrosenberg.github.io/ml2019/#home).
 
 
 ```toc

@@ -32,13 +32,15 @@ Intuitively, we expect to see more nice words in positive reviews such as "fanta
 Let's test our intuition against the data.
 
 Before we start to play with the data, we need to **tokenize** the text,
-i.e. separating the sequence of characters into a list of "words".
-The definition of words can be language- and task-dependent.
+i.e. separating the string into a list of **tokens**.
+The definition of a token can be language- and task-dependent.
+One common choise is to split the string into words.
 For example, we can use a simple regex to tokenize English text,
 however, it doesn't work for Chinese which doesn't have word boundary markers such as spaces.
 Similarly, in German there is no spaces in compound nouns, which can get long.
-For more information on tokenization, read [E 4.3.1]. 
-Fortunately, in most cases we can use existing tools.
+A more general solution is to discard the notion of words and tokenize by subwords strings, e.g. characters (n-grams) or byte pair encoding. 
+For more information on tokenization, read [JM 2.4.2]. 
+In most cases we can use existing tokenizers in text processing libraries such as NLTK or SpaCy.
 
 Let's tokenize the data and map the ratings to binary labels.
 Also, for efficiency we randomly sample a subset.
@@ -67,6 +69,7 @@ print(neg_tokens.count(token))
 
 So a simple heuristic approach is to count the frequency of occurence of each word in positive and negative examples,
 and classifiy an example as positive if it contains more words of high-frequency in the positive examples.
+**The key takeaway** is that we can do a reasonable job classifying the text based on individual words without understanding its meaning.
 
 ## Naive Bayes model
 :label:`sec_nb`
@@ -86,7 +89,7 @@ $$
 How do we parameterize $p_w(y\mid x)$? Recall the Bayes rule from probability:
 $$
 p(y\mid x) = \frac{p(x\mid y) p(y)}{p(x)}
-\propto p(x\mid y) p(y) .
+= \frac{p(x\mid y) p(y)}{\sum_{y\in\mathcal{Y}}p(x\mid y) p(y)} .
 $$
 
 Given that $y$ is binary, it's reasonable to model it as a Bernoulli random variable.
@@ -254,11 +257,8 @@ In :numref:`sec_nb`, our effective feature vector (we didn't need to explicit re
 is a sequence of words in the input,
 thus its length varies across examples,
 whereas here the feature vector has a fixed dimension of the vocabulary size.
-In fact, we can also use this feature vector for Naive Bayes,
-where each coordinate $x_i$ corresponds to the whether the $i$-th word in the *vocabulary* occurs in the input.
-But then we will need to model $p(x\mid y)$ using a binomial distribution
-since $x_i$ are binary now.
-The rest is the same.
+One can show that the Naive Bayes model we described above corresponds to assuming a multinomial distribution of the count vector $\phi(x)$,
+thus it's also called a Multinomial Naive Bayes model.
 
 ## Feature extractor
 :label:`sec_feature_extractor`
