@@ -359,8 +359,8 @@ which we will encounter again in neural sequence generation.
 One solution is to use a CRF in the last layer where
 $$
 \psi(y_i,y_{i-1}) = \exp\left [
-        \underbrace{W_{y_i,y_{i-1}} h_i}_{\text{tag bigram score}} +
-        \underbrace{W_{y_i} h_i}_{\text{tag unigram score}} +
+        \underbrace{w_{y_i,y_{i-1}}\cdot h_i}_{\text{tag bigram score}} +
+        \underbrace{w_{y_i}\cdot h_i}_{\text{tag unigram score}} +
         \underbrace{b_{y_i,y_{i-1}}}_{\text{bias term}}
     \right ]
 \;.
@@ -420,4 +420,6 @@ Finally, the input doesn't have to be sequence of words.
 For example, in handwritten digit recognition,
 the input are sequences of images.
 
-
+## Additional reading
+- Sam Wiseman and Alexander M. Rush. [Sequence-to-Sequence Learning as Beam-Search Optimization.](https://arxiv.org/pdf/1606.02960.pdf)
+- Mike Collins. [Notes on log-linear models, MEMMs, and CRFs.](http://www.cs.columbia.edu/~mcollins/crf.pdf)

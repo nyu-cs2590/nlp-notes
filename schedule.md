@@ -4,13 +4,13 @@
 
 | Date | Topics | Refs | Deliverables |
 | --- | ----------- | ----- | ----- |
-| 1. Sep 8 | [Overview](notes/overview.html): NLP tasks, basic ML | [overview](slides/lec01/overview_annotated.pdf); [basic ML](slides/lec01/basic_ml_annotated.pdf) | | 
+| 1. Sep 8 | [Overview](notes/overview.html): NLP tasks, basic ML | [slides 1](slides/lec01/overview_annotated.pdf); [slides 2](slides/lec01/basic_ml_annotated.pdf) | | 
 | | **Representation of text** | | |
 | 2. Sep 15 | [Text classification](notes/text_classification.html): bag-of-words, naive Bayes classifier, logistic regression | [slides](slides/lec02/text_classification_annotated.pdf) | hw1 out | 
 | 3. Sep 22 | [Distributed representation](notes/distributed_representation.html): vector space models, Brown clusters, neural word embeddings | [slides](slides/lec03/distributed-representation.pdf) | | 
 | | **Predicting sequences** | | |
 | 4. Sep 29 | [Language models](#schedule): n-gram LM, neural LM, perplexity | [slides](slides/lec04/language-model.pdf)| hw1 due; hw2 out | 
-| 5. Oct 6 | [Sequence labeling](notes/sequence_labeling.html): log-linear models, decoding, POS tagging, NER | | | 
+| 5. Oct 6 | [Sequence labeling](notes/sequence_labeling.html): log-linear models, decoding, POS tagging, NER |[slides](slides/lec05/sequence-labeling.pdf) | | 
 | 6. Oct 13 | [Unsupervised sequence labeling](#schedule): HMM, EM | | hw2 due; hw3 out | 
 | 7. Oct 20 | Midterm | |  | 
 | | **Predicting trees** | | |
