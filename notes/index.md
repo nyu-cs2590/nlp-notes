@@ -8,6 +8,6 @@ overview
 basic_ml
 text_classification
 distributed_representation
-language_model
+lm
 sequence_labeling
 ```
