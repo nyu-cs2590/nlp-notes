@@ -30,6 +30,7 @@
 - Week 8 (Oct 27). **Context-free parsing**: PCFG, CYK, neural parser
     - [Collins PCFG](http://www.cs.columbia.edu/~mcollins/courses/nlp2011/notes/pcfgs.pdf), [Eisner Inside-Outside](http://www.cs.jhu.edu/~jason/465/readings/iobasics.pdf), [slides](slides/lec07/parsing.pdf)
 - Week 9 (Nov 3). **Semantic parsing**: logical semantics, learning from logical forms / denotations
+    - E Ch12, [Liang 16](https://cs.stanford.edu/~pliang/papers/executable-cacm2016.pdf), [slides](slides/lec08/semantics.pdf)
 
 #### Neural networks for NLP
 
