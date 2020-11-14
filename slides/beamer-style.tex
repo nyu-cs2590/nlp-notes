@@ -28,6 +28,7 @@
 
 % tikz styles
 \usepackage{tikz}
+\usepackage{tikz-qtree}
 \usepackage{xparse}%  For \NewDocumentCommand
 \usepackage{calc}%    For the \widthof macro
 \usetikzlibrary{shapes.geometric, arrows}
@@ -102,6 +103,8 @@ fade on/.style={alt=#1{}{fade}},
 }
 
 % other styles
+\definecolor{beamerblue}{rgb}{0.2,0.2,0.7}
+\newcommand{\header}[1]{\textcolor{beamerblue}{#1}}
 \renewcommand{\emph}[1]{\textcolor{blue}{#1}}
 \newcommand{\nice}[1]{\textcolor{ForestGreen}{#1}}
 \newcommand{\mycite}[1]{{\small #1}}

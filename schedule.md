@@ -35,6 +35,7 @@
 #### Neural networks for NLP
 
 - Week 10 (Nov 10). **Neural sequence modeling**: seq2seq, attention, copy mechanism
+    - [slides](slides/lec09/main.pdf), D2L [9.7](https://d2l.ai/chapter_recurrent-modern/seq2seq.html), [9.8](https://d2l.ai/chapter_recurrent-modern/beam-search.html), [10](https://d2l.ai/chapter_attention-mechanisms/index.html)
 - Week 11 (Nov 17). **Self-supervised pre-training**: contextualized word embedding, pre-training and fine-tuning
 
 #### Beyond individual sentences
