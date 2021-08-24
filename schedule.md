@@ -32,17 +32,22 @@
 - Week 9 (Nov 3). **Semantic parsing**: logical semantics, learning from logical forms / denotations
     - E Ch12, [Liang 16](https://cs.stanford.edu/~pliang/papers/executable-cacm2016.pdf), [slides](slides/lec08/semantics.pdf)
 
-#### Neural networks for NLP
+#### Deep learning for NLP
 
-- Week 10 (Nov 10). **Neural sequence modeling**: seq2seq, attention, copy mechanism
+- Week 10 (Nov 10). **Neural sequence modeling**: seq2seq, attention, copy mechanism, text generation
     - [slides](slides/lec09/main.pdf), D2L [9.7](https://d2l.ai/chapter_recurrent-modern/seq2seq.html), [9.8](https://d2l.ai/chapter_recurrent-modern/beam-search.html), [10](https://d2l.ai/chapter_attention-mechanisms/index.html)
-- Week 11 (Nov 17). **Self-supervised pre-training**: contextualized word embedding, pre-training and fine-tuning
+- Week 11 (Nov 17). **Representation learning**: transformers, contextualized word embedding, pre-training and fine-tuning, autoencoders
+    - [slides](slides/lec10/main.pdf)
+    - [Representation Learning: A Review and New Perspectives](https://arxiv.org/abs/1206.5538)
 
-#### Beyond individual sentences
+#### Beyond text
 
-- Week 12 (Nov 24). **Discourse and grounding**: discourse relations, speech acts, RL agents 
+- Week 12 (Nov 24). **Language grounding**: language+vision/robotics, pragmatics, RL agents 
+    - [slides](slides/lec11/main.pdf)
 
 #### Conclusion
 
-- Week 13 (Dec 1). **Summary and outlook**
+- Week 13 (Dec 1). Guest lecture on **natural language interface** by [Victorial Lin](http://victorialin.net)
+    - [slides](slides/lec12/main.pdf)
+    - [Advice on writing and presentation](slides/lec12/advice.pdf)
 - Week 14 (Dec 8). **Project presentations**

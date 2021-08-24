@@ -636,7 +636,7 @@
         & \max_\phi \sum_{x\in\sD}\text{ELBO}(x;\theta, \phi)\\
         &= \max_\phi \sum_{x\in\sD} \BE_{q(z\mid x; \phi)} \pb{\log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}}
     \end{align*}
-    \emph{Amortization}: update $\phi$ and $\theta$ iteratively for each mini-batch.
+    Update $\phi$ and $\theta$ iteratively for each mini-batch.
 \end{frame}
 
 \begin{frame}

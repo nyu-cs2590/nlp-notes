@@ -25,6 +25,5 @@ Here are some general directions:
 
 - **Deliverables**:
     - **Proposal (0%)**: You are required to submit a two-page proposal on Nov 3 (week 9). The proposal is not graded but we will provide feedback through office hours.
-    - **Presentation (10%)**: Each group should upload a recored presentation of no more than 15 minutes before Dec 8.
-During the last lecture, each group will give a spotlight presentation of their work followed by Q\&A. 
+    - **Presentation (10%)**: Each group will give a spotlight presentation (3 minutes) of their work followed by Q\&A (1 minutes). 
     - **Report (20%)**: The final report is due on Dec 20. Each group should submit a report in .pdf in the ACL templates ([LaTex/Word](http://acl2020.org/downloads/acl2020-templates.zip), [Overleaf](https://www.overleaf.com/latex/templates/acl-2020-proceedings-template/zsrkcwjptpcd)). 
