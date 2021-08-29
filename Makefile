@@ -10,6 +10,12 @@ deploy:
 	#mv ~/website/hhexiy.github.io/nlp/_sources ~/website/hhexiy.github.io/nlp/sources
 	#mv ~/website/hhexiy.github.io/nlp/_images ~/website/hhexiy.github.io/nlp/images
 
+deploy_home:
+	cp _build/html/*.html ~/website/hhexiy.github.io/nlp/2021
+
+deploy_all:
+	cp -r _build/html/* ~/website/hhexiy.github.io/nlp/2021
+
 deploy_nyu_all:
 	scp -r _build/html/* hehe@access.cims.nyu.edu:/usr/httpd/htdocs_cs/courses/fall20/CSCI-GA.2590-001
 

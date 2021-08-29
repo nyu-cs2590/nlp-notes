@@ -1,31 +1,34 @@
 # Natural Language Processing
-**CSCI-GA 2590, New York University, Fall 2020**
+**CSCI-GA 2590, New York University, Fall 2021**
 
 ## Logistics
-- Format: online lectures with (optional) in-person office hours 
-    - Please note that the entire course can be taken *fully online*.
-- Lectures: Tue 7:10pm-9pm EST (on Zoom)
-- Instructor: [He He](https://hhexiy.github.io)
+### Time and location
+- Lectures: Wed 5:10pm-7pm EST (Rm 109, WWH)
+- Instructor: [He He](https://hhexiy.github.io), hhe@nyu.edu
 - TAs:
-    - Shivesh Ganju
-    - Gaomin Wu
-    - Gauri Dhawan
-- Office hours: on Zoom 
-    - He He: Wed 4-5pm EST
-    - Shivesh Ganju: Fri 7-8pm EST
-    - Gaomin Wu: Tue 10-11am EST
-- Calender: [subscribe](https://calendar.google.com/calendar/b/3?cid=Y19jdmFnYmJhZWxlZHE4dTV2bDc0MGIwdGhzMEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t) to get up-to-date times on lectures/office hours/due dates/etc.
-- Zoom instruction:
-    - To attend lectures, log on [NYUClasses](https://newclasses.nyu.edu), and click the Zoom tab on the left.
-    - If you are not muted upon entering the room, please mute yourself.
-    - Since it's a large class, questions should be sent to the chat room and the instructor will check and answer them during the class.
-    - Recordings will appear on Zoom a few days (depending on how fast Zoom process it) after the lecture. To watch the videos, go to NYUClasses --> Zoom --> Cloud Recordings.
+    - [Udit Arora](https://uditarora.com) (lead TA), ua388@nyu.edu 
+    - Hyejin Kim, hk3342@nyu.edu
+    - Abed Qaddoumi, amq259@nyu.edu
+    - Wenqian Ye, wy2029@nyu.edu
+- Office hours: 
+    - He He: Thur 4-5pm EST (Rm 605, CDS)
+    - Udit Arora: TBD 
+    - Hyejin Kim: TBD
+    - Abed Qaddoumi: TBD
+    - Wenqian Ye: TBD
+- Calender: [subscribe](https://calendar.google.com/calendar/u/3?cid=Y19jdmFnYmJhZWxlZHE4dTV2bDc0MGIwdGhzMEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t) to get up-to-date times on lectures/office hours/due dates/etc.
 
-## Accessibility
-We try to make all of the course material accessible.
-If you need additional accomadation, please send us an email.
-Please let us know in advance any accomadation needed for assignments (in PDF)
-and the midterm (online).
+### Accessibility
+We try our best to make all of the course material accessible.
+If you need additional accommodation, please send us an email.
+Please let us know in advance any accommodation needed for assignments and the midterm.
+If you need additional time for the midterm, contact the [Moses Center](https://www.nyu.edu/about/leadership-university-administration/office-of-the-president/office-of-the-provost/university-life/office-of-studentaffairs/student-health-center/moses-center-for-student-accessibility.html)
+and send us an accommodation letter.
+
+### Communication
+We will use [Campuswire](https://campuswire.com) as our main communication tool for announcements and answering questions related to the lectures, assignments, and projects.
+The registration link is available on [Brightspace](https://brightspace.nyu.edu/d2l/home/125676).
+
 
 ## Course information
 How can we teach machines to understand language so that they can answer our queries, extract information from textual data, or even have a conversation with us?
@@ -35,11 +38,11 @@ including classification, sequence labeling, structured prediction, unsupervised
 Specific applications include text classification, constituent parsing, semantic parsing, and generation.
 
 ### Prerequisites
-Students are expected to have solid mathematic background and programming skills.
+Students are expected to have solid mathematics background and programming skills.
 
 - Probability, statistics, linear algebra (DS-GA.1002, MATH-UA.140, MATH-UA.235) 
 - Algorithms and data structure (CSCI-UA.102)
-- Basic knowlege in machine learning (DS-GA.1003, CSCI-UA.0473) will be helpful
+- Basic knowledge in machine learning (DS-GA.1003, CSCI-UA.0473) will be helpful
 
 ### Resources
 **Textbook:** There is no required textbook. Course notes/slides should be sufficient.
@@ -55,8 +58,8 @@ In the lecture notes, we will use JM, E, G, D2L to refer to the above books resp
 **Background**: Here are some useful materials if you want to review the background knowledge.
 
 - Probability and optimization in the appendix of Eisenstein's book.
-- [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) from DS-GA.1002.
-- Machine learning material from [DS-GA.1003](https://davidrosenberg.github.io/ml2019/#home).
+- [Notes](https://cims.nyu.edu/~cfgranda/pages/DSGA1002_fall15/notes.html) from DS-GA.1002 (Probability and Statistics for Data Science).
+- Introductory machine learning material from [DS-GA.1002](https://github.com/briandalessandro/DataScienceCourse/tree/master/ipython/Lectures).
 
 
 ```toc
