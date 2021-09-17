@@ -1,16 +1,19 @@
 # Schedule
 
-**Note**: Future schedule is subject to minor change. Please refer to Gradescope for HW due date.
+**Note**: Future schedule is subject to minor change.
+
+#### Assignments
+- Assignment 1: Representing and classifying text [[hw1.tgz](assignments/hw1.tgz)][[hw1.pdf](assignments/hw1.pdf)] (Due on Sep 29)
 
 #### Introduction
 
 - Week 1 (Sep 8). **Overview**: NLP tasks and challenges, basic ML
-    - [notes](notes/overview.html)
+    - [slides 1](slides/lec01/overview.pdf) [slides 2](slides/lec01/basic_ml.pdf) [notes](notes/overview.html)
 
 #### Representation of text
 
 - Week 2 (Sep 15). **Text classification**: bag-of-words, naive Bayes models, logistic regression
-    - [notes](notes/text_classification.html)
+    - [slides](slides/lec02/main.pdf) [notes](notes/text_classification.html)
 - Week 3 (Sep 22). **Distributed representation**: vector space models, Brown clusters, neural word embeddings
     - [notes](notes/distributed_representation.html)
 

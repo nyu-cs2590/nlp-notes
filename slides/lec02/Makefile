@@ -1,6 +1,7 @@
 default: 
 	pdflatex main
 	bibtex main
+	open main.pdf
 	#pdflatex main
 	#pdflatex main
 

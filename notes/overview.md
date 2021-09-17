@@ -20,7 +20,7 @@ which is an integral part of AI since its birth.
 Turing was optimistic that a machine will pass the Turing test by the end of the century and possess human thinking capability.
 We are obviously far from that.
 But a more interesting question is, even if a machine passes the Turing test, does it mean it has acquired human intelligence?
-One famous objection is the "Chinese room" thought experiment, where a "simulator" operates as if it knows Chinese but obviously does not have any knowlege about language.
+One famous objection is the "Chinese room" thought experiment, where a "simulator" operates as if it knows Chinese but obviously does not have any knowledge about language.
 - 1954: Aside from the philosophical arguments, there is clear practical motivation for working on NLP.
 Machine translation (MT) is one such example. In fact, interests in building MT systems started even before AI.
 The Georgetown-IBM experiment is the first public demonstration of a MT system.

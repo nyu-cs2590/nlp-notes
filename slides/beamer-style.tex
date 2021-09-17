@@ -1,18 +1,54 @@
-
-    
 %  beamer style
-\usetheme{Boadilla}
-\useoutertheme{infolines}
+%\usetheme{Boadilla}
+%\useoutertheme{infolines}
+
+% color
+\newif\ifstartedinmathmode
+\definecolor{beamerblue}{rgb}{0.2,0.2,0.7}
+\definecolor{green}{RGB}{34,139,34}
+\newcommand<>{\gray}[1]{\textcolor#2{gray}{#1}}
+\newcommand<>{\red}[1]{\textcolor#2{red}{#1}}
+\newcommand<>{\mred}[1]{{\color#2{red}#1}}
+\newcommand<>{\blue}[1]{\textcolor#2{blue}{#1}}
+\newcommand<>{\mblue}[1]{{\color#2{blue}#1}}
+\newcommand<>{\green}[1]{\textcolor#2{green}{#1}}
+\newcommand<>{\mgreen}[1]{{\color#2{green}#1}}
+\newcommand<>{\beamerblue}[1]{\textcolor#2{beamerblue}{#1}}
+\newcommand<>{\mbeamerblue}[1]{{\color#2{beamerblue}#1}}
+\newcommand{\mycite}[1]{{\color{gray}\small #1}}
+%\newcommand{\green}[1]{\textcolor{ForestGreen}{#1}}
+%\newcommand{\red}[1]{\textcolor{red}{#1}}
+%\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+
+
+%\setbeamercolor{frametitle}{fg=blue}
+%\setbeamercolor{title}{fg=black}
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\addtobeamertemplate{block begin}{}{}
+\addtobeamertemplate{block end}{}{\medskip}
+
+% itemize
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{10pt}}{\enditemize}
 \setbeamertemplate{itemize items}[default]
 \setbeamertemplate{enumerate items}[default]
 %\setbeamerfont*{itemize/enumerate body}{size=\large}
 \setbeamerfont*{itemize/enumerate subbody}{parent=itemize/enumerate body}
 \setbeamerfont*{itemize/enumerate subsubbody}{parent=itemize/enumerate body}
-\setbeamertemplate{blocks}[rounded][shadow=false]
-\addtobeamertemplate{block begin}{}{}
-\addtobeamertemplate{block end}{}{\medskip}
-\setbeamertemplate{section in toc}{\inserttocsectionnumber.~\inserttocsection}
 
+
+% Background
+\definecolor{MyBackground}{RGB}{255,253,218}
+%% Uncomment this if you want to change the background color to something else
+%\setbeamercolor{background canvas}{bg=MyBackground}
+
+%% Change the bg color to adjust your transition slide background color!
+\newenvironment{transitionframe}{
+  \setbeamercolor{background canvas}{bg=yellow}
+  \begin{frame}}{
+    \end{frame}
+}
 
 \newenvironment<>{simpleblock}[1]{%
   \begin{actionenv}#2%
@@ -28,7 +64,6 @@
 
 % tikz styles
 \usepackage{tikz}
-\usepackage{tikz-qtree}
 \usepackage{xparse}%  For \NewDocumentCommand
 \usepackage{calc}%    For the \widthof macro
 \usetikzlibrary{shapes.geometric, arrows}
@@ -103,8 +138,36 @@ fade on/.style={alt=#1{}{fade}},
 }
 
 % other styles
-\definecolor{beamerblue}{rgb}{0.2,0.2,0.7}
-\newcommand{\header}[1]{\textcolor{beamerblue}{#1}}
-\renewcommand{\emph}[1]{\textcolor{blue}{#1}}
-\newcommand{\nice}[1]{\textcolor{ForestGreen}{#1}}
-\newcommand{\mycite}[1]{{\small #1}}
+
+% textbox
+\newenvironment{filledbox}[2][beamerblue]
+  {\begin{tikzpicture}
+    \def\boxcolor{#1}
+      \node [draw=#1, fill=#1!10, thick, rectangle, rounded corners, inner sep=10pt, inner ysep=10pt, text width=#2] (box)
+      \bgroup
+  }
+  {
+      \egroup;
+    \end{tikzpicture}
+  }
+
+\newenvironment{titledbox}[3][beamerblue]
+  {\begin{tikzpicture}
+    \def\boxcolor{#1}
+    \def\boxname{#3}
+    \node [draw=#1, thick, rectangle, rounded corners, inner sep=10pt, inner ysep=10pt, text width=#2] (box)
+      \bgroup
+  }
+  {
+      \egroup;
+      \node[fill=white,right=10pt] at (box.north west) {\textcolor{\boxcolor}{\boxname}};
+    \end{tikzpicture}
+  }
+
+% icon
+\newcommand{\idea}[1]{
+    \begin{tikzpicture}
+        \node[anchor=south](bulb){\includegraphics[height=1cm]{figures/lightbulb}};
+        \node[right=0cm of bulb, anchor=west, text width=0.9\linewidth]{#1};
+    \end{tikzpicture}
+}

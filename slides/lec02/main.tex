@@ -1,9 +1,10 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
 \usepackage{amsmath}
 \usepackage{centernot}
+\usepackage{xspace}
 \usepackage{pifont}
 \usepackage{tabularx}
 \usepackage{makecell}
@@ -12,6 +13,10 @@
 \usepackage{array}
 \usepackage{CJKutf8}
 \usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{pdfcomment}
+\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+%\newcommand{\pdfnote}[1]{}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -36,7 +41,7 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{September 15, 2021}
 
 \begin{document}
 
@@ -47,13 +52,33 @@
 \begin{frame}
     {Text classification}
     \begin{itemize}
-        \item Application
+        \item Input: text (sentence, paragraph, document)
+        \item Predict the \blue{category or property} of the input text
             \begin{itemize}
-                \item Spam filter, sentiment classification, document classification, ...
-                \item Textual entailment, paraphrase detection, ...
+                \item Sentiment classification: Is the review positive or negative?
+                \item Spam detection: Is the email/message spam or not?
+                \item Hate speech detection: Is the tweet/post toxic or not?
+                \item Stance classification: Is the opinion liberal or conservative?
+            \end{itemize}
+            \pause
+        \item Predict the \blue{relation} of two pieces of text
+            \begin{itemize}
+                \item Textual entailment (HW1): does the premise entail the hypothesis?\\
+                    Premise: The dogs are running in the park.\\
+                    Hypothesis: There are dogs in the park.
+                \item Paraphrase detection: are the two sentences paraphrases?\\
+                    Sentence 1: The dogs are in the park.\\
+                    Sentence 2: There are dogs in the park.
             \end{itemize}
     \end{itemize}
-    \vspace{7em}
+    \pdfnote{
+        Paraphrase detection itself may not always be a well-defined problem.
+        Consider the given example, are they paraphrase?
+        Well, it depends on the context.
+        If the task is image caption, then yes.
+        If the task is dialogue response generation, where the context is ``Where are the dogs?'',
+        then S1 and S2 convey very different answers to the question.
+    }
 \end{frame}
 
 \section{Generative models: naive Bayes}
@@ -62,27 +87,60 @@
     {Intuition}
     \begin{itemize}
         \itemsep1em
-        \item[]Example: sentiment classification for movie reviews
+        \item[]\beamerblue{Example}: sentiment classification for movie reviews
     \begin{itemize}
-        \item[] \textit{Bromwell High is a cartoon comedy. It ran at the same time as some other programs about school life, such as "Teachers". My 35 years in the teaching profession lead me to believe that Bromwell High's satire is much closer to reality than is "Teachers". The scramble to survive financially, the insightful students who can see right through their pathetic teachers' pomp, the pettiness of the whole situation, all remind me of the schools I knew and their students...}
-
-        \item[] Label: positive 
+        \item[] {\small \setstretch{0.8} \textit{Action. Comedy. Suspense. This movie has it
+all. The Plot goes that 4 would be
+professional thieves are invited to take part in a
+heist in a small town in Montana. every type of
+crime movie archetype character is here. Frank,
+the master mind. Carlos, the weapons expert. Max,
+the explosives expert. Nick, the safe cracker and
+Ray, the car man. Our 4 characters meet up at the train station
+and from the beginning none of them like or trust
+one another. Added to the mix is the fact that
+Frank is gone and they are not sure why they have
+called together. Now Frank is being
+taken back to New Jersey by the 2 detectives but
+soon escapes on foot and tries to make his way
+back to the guys who are having all sorts of
+            problems of their own. \textcolor<2->{blue}{Truly a great
+film loaded with laughs and great acting. Just an
+overall good movie for anyone looking for a laugh
+            or something a little different}}\par}
     \end{itemize}
     \pause
-\item[]\emph{Idea}: assign a score of positivity/negativity for each word
-
-\item[][demo]
+\item[]\beamerblue{Idea}: count the number of positive/negative words
+    \begin{itemize}
+        \item What is a ``word''?
+        \item How do we know which are positive/negative?
     \end{itemize}
+
+    \end{itemize}
+    \pdfnote{
+        How would you quickly tell the sentiment of this review?
+        Understand everything said in it is hard (genre, plot, actor performance etc.).
+        But sometimes a couple of keywords or a concluding sentence is sufficient.
+    }
+    \pdfnote{
+        Now there are two questions left.
+        We know what's a word intuitively, but to the computer the input is just a string of unicodes, how can we separate that into a list of words.
+        The second question is how can we tell which words are positive or negative. The rule based approach is to construct a dictionary of such words, which can be quite effective.
+        But here we'll see how to learn this from labeled data.
+    }
 \end{frame}
 
 \begin{frame}
-    {Side note: tokenization}
-    Splitting a string of text $s$ to a sequence of \textbf{tokens} $[x_1, \ldots x_n]$.
+    {Preprocessing: tokenization}
+    \beamerblue{Goal}: Splitting a string of text $s$ to a sequence of \textbf{tokens} $[x_1, \ldots, x_n]$.
 
-    \emph{Language-specific solutions}\\
+    \beamerblue{Language-specific solutions}\\
     \begin{itemize}
         \itemsep1em
         \item Regular expression: ``I didn't watch the movie''. $\rightarrow$ [``I'', ``did'', ``n't'', ``watch'', ``the'', ``movie'', ``.''] 
+            \begin{itemize}
+                \item Special cases: U.S., Ph.D. etc.
+            \end{itemize}
         \item Dictionary / sequence labeler: 
             \begin{CJK*}{UTF8}{gbsn}
                 ``我没有去看电影。'' $\rightarrow$ [``我'', ``没有'', ``去'', ``看'', ``电影'', ``。'']
@@ -90,40 +148,72 @@
     \end{itemize}
 
     \pause
-    \emph{General solution}: don't split by words\\
+    \beamerblue{General solutions}: don't split by words\\
     \begin{itemize}
         \item Characters:
-            [``u'', ``n'', ``a'', ``f'', ``f'', ``a'', ``b'', ``l'', ``e'']
-        \item Subword (e.g. byte pair encoding):
-            [``un'', ``aff'', ``able\#'']
+            [``u'', ``n'', ``a'', ``f'', ``f'', ``a'', ``b'', ``l'', ``e''] (pros and cons?)
+            \pause
+        \item Subword (\eg byte pair encoding):
+            [``un'', ``aff'', ``able\#''] \gray{[board]} 
     \end{itemize}
+    \pdfnote{
+        Note that for contractions like didn't. We can tokenize it into either did n't or didn 't. Both are okay as long as it's consistent.
+        English tokenization gets more complex when there is punctuations or special symbols.
+    }
+    \pdfnote{Tokenization can have important impact on the performance of downstream learning algorithms.
+    }
+    \pdfnote{
+        Using character sequences (or even byte sequences) we impose mininal prior knowledge on what is a word. Given enough data, the model can probably figure out a reasonable unit of the characters based on their frequencies. But one downside in this approach is that the sequence is now much longer, and the computation time of many algorithms grows with sequence length, which will be expensive for large-scale training.
+    }
+    \pdfnote{
+        A middle ground is to use subword, a unit larger than characters but smaller than words.
+        This is commonly used in large-scale models nowadays.
+        The BPE algorithms is a simple technique from data compression.
+        The basic idea is to replace commonly occured sequences with another symbol.
+    }
 \end{frame}
 
 \begin{frame}
-    {Problem formulation}
+    {Classification: problem formulation}
     \begin{itemize}
         \itemsep1em
-        \item \emph{Input}: a sequence of tokens $X=(X_1, \ldots X_n)$ where $X_i \in \mathcal{V}$.
-        \item \emph{Output}: label $Y\in \pc{0, 1}$.
-        \item \emph{Probabilistic model}:
+        \item \beamerblue{Input}: a sequence of tokens $x=(x_1, \ldots x_n)$ where $x_i \in \mathcal{V}$.
+        \item \beamerblue{Output}: binary label $y\in \pc{0, 1}$.
+        \item \beamerblue{Probabilistic model}:
             $$
             f(x) = \begin{cases}
- 1 & \text{if $p_\theta(y\mid x) > 0.5$} \\
+ 1 & \text{if $p_\theta(y=1\mid x) > 0.5$} \\
  0 & \text{otherwise}
  \end{cases} ,
             $$
             where $p_\theta$ is a distribution parametrized by $\theta\in{\Theta}$.
-        \item Question: how to choose $p_\theta$? (\textbf{inductive bias})
+        \item Question: how to choose $p_\theta$?
     \end{itemize}
+    \pdfnote{
+        Choosing $p_\theta$ is the modeling part where our task-specific knowledge comes in: how should the label depend on the text.
+    }
 \end{frame}
 
 \begin{frame}
     {Model $p(y\mid x)$}
     How to write a review:\\
     \begin{enumerate}
-        \item Decide the sentiment by flipping a coin
-        \item Generate word sequentially conditioned on the sentiment 
+        \item Decide the sentiment by flipping a coin: $p(y)$
+        \item Generate word sequentially conditioned on the sentiment  $p(x\mid y)$
     \end{enumerate}
+    \pause
+    \vspace{-1ex}
+    \onslide<+->{
+        \begin{align}
+            p(y)&=\onslide<+->{\text{Bernoulli}(\alpha)} \\
+            p(x\mid y)&=\onslide<+->{\prod_{i=1}^n p(x_i\mid y)\quad\quad \text{(independent assumption)}}\\
+                &=\onslide<+->{\prod_{i=1}^n \text{Categorical}(
+                \underbrace{\theta_{1,y},\ldots,\theta_{|\sV|,y}}_{\text{sum to 1}}
+                )}
+        \end{align}
+    }
+    \vspace{-1ex}
+    \onslide<+->{
     \begin{block}
         {Bayes rule}
         $$
@@ -131,10 +221,7 @@
         = \frac{p(x\mid y)p(y)}{\sum_{y\in\mathcal{Y}} p(x\mid y)p(y)}
         $$
     \end{block}
-    \begin{itemize}
-        \item $p(y)$
-        \item $p(x\mid y)$
-    \end{itemize}
+}
 \end{frame}
 
 \begin{frame}
@@ -146,44 +233,76 @@
         p(x\mid y) = \prod_{i=1}^n p(x_i\mid y) \;.
         $$
     \end{block}
-    A strong assumption, but works surprisingly well in practice.
+    \begin{itemize}
+        \item A strong assumption, but works surprisingly well in practice.
 
-    Note: $p(x_i\mid y)$ doesn't have to be a categorical distribution.
+        \item $p(x_i\mid y)$ doesn't have to be a categorical distribution (\eg Gaussian distribution)
+    \end{itemize}
 
-    \emph{Inference}:\\
-    \vspace{5em}
+    \beamerblue{Inference}: $y=\argmax_{y\in\sY} p_\theta(y\mid x)$ \gray{[board]}
+    \pdfnote{
+        Now that we have figured out the modeling and inference problem, the next problem is learning the parameters.
+    }
 \end{frame}
 
 \begin{frame}
     {Maximum likelihood estimation}
-    \emph{Task}: estimate parameters $\theta$ of a distribution $p(y; \theta)$ given i.i.d. samples $D=\p{y_1, \ldots, y_N}$ from the distribution.
+    \beamerblue{Task}: estimate parameters $\theta$ of a distribution $p(y; \theta)$ given i.i.d. samples $D=\p{y_1, \ldots, y_N}$ from the distribution.
 
-    \emph{Goal}: find the parameters that make the observed data most probable.
+    \beamerblue{Goal}: find the parameters that make the observed data most probable.
 
+    \pause
     \textbf{Likelihood function} of $\theta$ given $D$:
     $$
     L(\theta; D) \eqdef p(D;\theta) = \prod_{i=1}^N p(y_i; \theta) \;.
     $$
 
-    \textbf{Maximum likelihood estimator}:\\
-    \vspace{7em}
+    \textbf{Maximum likelihood estimator}:
+    \begin{align}
+        \hat{\theta} &= \argmax_{\theta\in\Theta} L(\theta; D)
+        = \argmax_{\theta\in\Theta} \sum_{i=1}^N \log p(y_i; \theta)
+    \end{align}
+
+    \pdfnote{To make ``most probable'' more precise, we define the likelihood function of the parameters to be the probability of the data given by the model.}
+    \pdfnote{Why can we write the joint distribution as the product? Independent assumption from iid.}
+    \pdfnote{Now it's reduced to an optimization problem.}
 \end{frame}
 
 \begin{frame}
     {MLE and ERM}
+    ERM:
+    $$
+    \min \sum_{i=1}^N \ell(x^{(i)}, y^{(i)}, \theta)
+    $$
+    \pause
+
+    MLE:
+    $$
+    \max \sum_{i=1}^N \log p(y^{(i)} \mid x^{(i)}; \theta)
+    $$
+    \pause
+
+    What's the connection between MLE and ERM?
+
+    MLE is equivalent to ERM with the \textbf{negative log-likelihood} (NLL) loss function:
+    $$
+    \ell_{\text{NLL}}(x^{(i)}, y^{(i)}, \theta) \eqdef -\log p(y^{(i)} \mid x^{(i)}; \theta)
+    $$
 \end{frame}
 
 \begin{frame}
     {MLE for our Naive Bayes model}
+    \gray{[board]}
 \end{frame}
 
 \begin{frame}
-    {MLE for our Naive Bayes model}
-    MLE solution:
+    {MLE solution for our Naive Bayes model}
     \begin{align*}
         \text{count}(w, y) &\eqdef \text{frequency of $w$ in documents with label $y$}\\ 
-        p(w\mid y) &= \frac{\text{count}(w, y)}{\sum_{w\in\mathcal{V}}\text{count}(w, y)}\\
-        p(y=k) &= \frac{\sum_{i=1}^N \1\p{y^{(i)}=k}}{N}
+        p_{\text{MLE}}(w\mid y) &= \frac{\text{count}(w, y)}{\sum_{w\in\mathcal{V}}\text{count}(w, y)}\\
+        &= \text{how often the word occur in positive/negative documents}\\
+        p_{\text{MLE}}(y=k) &= \frac{\sum_{i=1}^N \1\p{y^{(i)}=k}}{N}\\
+        &= \text{fraction of positive/negative documents}
     \end{align*}
     \pause
     \textbf{Smoothing}: reserve probability mass for unseen words
@@ -191,6 +310,10 @@
         p(w\mid y) = \frac{{\color{blue}\alpha} + \text{count}(w, y)}{\sum_{w\in\mathcal{V}}\text{count}(w, y) + {\color{blue}\alpha|\mathcal{V}|}}
     $$
     Laplace smoothing: $\alpha=1$
+    \pdfnote{
+        How well would this model generalize to unseen documents?
+        What if we have a word that's not seen during training?
+    }
 \end{frame}
 
 \begin{frame}
@@ -198,9 +321,22 @@
         Naive Bayes doesn't have to use single words as features
     \begin{itemize}
         \itemsep1em
-        \item Lexicons, e.g. LIWC.
-        \item Task-specific features, e.g. is the subject all caps.
-        \item Bytes and characters, e.g. used in language ID detection.
+        \item Lexicons, \eg LIWC.
+        \item Task-specific features, \eg is the email subject all caps.
+        \item Bytes and characters, \eg used in language ID detection.
+        %\item $n$-grams (a symbol of $n$ consecutive tokens)
+    \end{itemize}
+    \pdfnote{
+        Char/byte NB model is a very fast and effective language ID detector (e.g., google translate).
+    }
+\end{frame}
+
+\begin{frame}
+    {Summary of Naive Bayes models}
+    \begin{itemize}
+        \item Modeling: the conditional indepedence assumption simplifies the problem
+        \item Learning: MLE (or ERM with negative log-likelihood loss)
+        \item Inference: very fast (adding up scores of each word)
     \end{itemize}
 \end{frame}
 
@@ -208,52 +344,94 @@
 
 \begin{frame}
     {Discriminative models}
-    \emph{Key idea}: directly model the conditional distribution $p(y\mid x)$
+    % TODO: move this slides to later
+    \beamerblue{Idea}: directly model the conditional distribution $p(y\mid x)$
+    \pause
     \begin{table}
         \renewcommand{\arraystretch}{1.5}
-        \begin{tabular}{cc}
-            generative models & discriminative models \\
+        \begin{tabular}{lcc}
+            & generative models & discriminative models \\
             \hline
-            $p(x,y)$ & $p(y\mid x)$ \\
-            more assumption & - \\
-            generative story & feature extractor
+            modeling & joint: $p(x,y)$ & conditional: $p(y\mid x)$ \\
+            assumption on $y$ & yes & yes \\
+            assumption on $x$ & yes & no \\
+            development & generative story & feature extractor
         \end{tabular}
     \end{table}
+    \pdfnote{
+        In Naive Bayes model, we used Bayes rule to get $p(y\mid x)$ given $p(x\mid y)$ and the class prior $p(y)$.
+        But one question here is, if $p(y\mid x)$ is what we are ultimately interested in, why bother modeling the data likelihood and the prior as opposed to directly modeling $p(y\mid x)$.
+    }
 \end{frame}
 
 \begin{frame}
     {Model $p(y\mid x)$}
     How to model $p(y\mid x)$?
     \begin{itemize}
-        \item[] Bernoulli:
+        \item[] $y$ is a Bernoulli variable:
+            $$
+            p(y\mid x) = \alpha^y (1-\alpha)^{(1-y)}
+            $$
+            \pause
         \item[] Bring in $x$:
+            $$
+            p(y\mid x) = h(x)^y (1-h(x))^{(1-y)} \quad h(x) \in [0,1]
+            $$
     \end{itemize}
 
-    Linear predictor:\\
-    \vspace{7em}
+    \pause
+    Parametrize $h(x)$ using a linear function:\\
+    $$
+    h(x) = w\cdot \phi(x) + b \quad\quad \phi\colon \sX \rightarrow \BR^d
+    $$
+
+    Problem: $h(x) \in \BR$ (score)
 \end{frame}
 
 \begin{frame}
     {Logistic regression}
     Map $w\cdot\phi(x) \in\mathbb{R}$ to a probability by the \textbf{logistic function}
+    \vspace{-1em}
     \begin{center}
-        \includegraphics[height=3cm]{figures/logistic}
+        \includegraphics[height=4cm]{figures/logistic}
     \end{center}
+    \vspace{-2em}
     \begin{align*}
     p(y=1\mid x; w) &= \frac{1}{1 + e^{-w\cdot\phi(x)}} \quad (y\in \pc{0,1})\\
-        p(y=k\mid x; w) &= \frac{e^{w_k\cdot\phi(x)}}{\sum_{i\in\mathcal{Y}}e^{w_i\cdot\phi(x)}} \quad (y\in \pc{1, \ldots, K}) && \text{soft argmax}
+        p(y=k\mid x; w) &= \frac{e^{w_k\cdot\phi(x)}}{\sum_{i\in\mathcal{Y}}e^{w_i\cdot\phi(x)}} \quad (y\in \pc{1, \ldots, K}) && \text{``softmax''}
     \end{align*}
+    \pdfnote{
+        Note that in multiclass classification setting, there is one $w$ for each class.
+    }
+\end{frame}
+
+\begin{frame}
+    {Inference}
+    \begin{align}
+        \hat{y} &= \argmax_{k\in\sY} p(y=k\mid x; w) \\
+        &= \argmax_{k\in\sY} \frac{e^{w_k\cdot\phi(x)}}{\sum_{i\in\mathcal{Y}}e^{w_i\cdot\phi(x)}} \\
+        &= \argmax_{k\in\sY} e^{w_k\cdot\phi(x)} \\
+        &= \argmax_{k\in\sY} \underbrace{w_k\cdot\phi(x)}_{\textstyle\text{score for class $k$}}
+    \end{align}
 \end{frame}
 
 \begin{frame}
     {MLE for logistic regression}
+    \gray{[board]}
+    \pause
+    \begin{itemize}
+        \item Likelihood function is concave
+        \item No closed-form solution 
+        \item Use gradient ascent 
+    \end{itemize}
+    \pdfnote{LR is probabilisti, so we can still do MLE.}
 \end{frame}
 
 \begin{frame}
     {BoW representation}
     \textbf{Feature extractor}: $\phi\colon \mathcal{V}^n \rightarrow \mathbb{R}^d$.
 
-    \emph{Idea}: a sentence is the ``sum'' of words.
+    \beamerblue{Idea}: a sentence is the ``sum'' of words.
 
     Example:
     \begin{align*}
@@ -261,7 +439,12 @@
         \text{sentence} &= \w{in for a penny, in for a pound} \\
         x &= \p{\w{in}, \w{for}, \w{a}, \w{penny}, \w{in}, \w{for}, \w{a}, \w{pound}}
     \end{align*}
-    \vspace{7em}
+
+    $$
+    \phi_{\text{BoW}}(x) = \sum_{i=1}^n \phi_{\text{one-hot}}(x_i)
+    $$
+
+    \gray{[board]}
 \end{frame}
 
 \begin{frame}
@@ -272,17 +455,30 @@
             $$
             X_i \mid Y=y \sim \text{Categorical}(\theta_{1,y}, \ldots, \theta_{|\sV|, y}) \;.
             $$
-        \item The naive Bayes generative story corresponds to a multinomial distribution of the BoW count vector:
+        \item The naive Bayes generative story produces a BoW vector following a multinomial distribution:
             $$
             \phi_{\text{BoW}}(X) \mid Y=y \sim \text{Multinomial}(\theta_{1,y}, \ldots, \theta_{|\sV|,y}, n) \;.
             $$
+
+        \pause
         \item Both multinomial naive Bayes and logistic regression learn a linear separator $w\cdot\phi_{\text{BoW}}(x)+b=0$.
     \end{itemize}
+    \pause
     Question: what's the advantage of using logistic regression?
+
+    \pdfnote{
+        In this sense, NB is trying to model the BoW feature vector.
+    }
+    \pdfnote{
+        In addition, they both learn a linear predictor which simply sums the score of each word at inference time.
+        For NB, $w$ is $\log \theta$.
+    }
 \end{frame}
 
 \begin{frame}
     {Feature extractor}
+    Logistic regression allows for richer features.
+
     Define each feature as a function $\phi_i\colon \mathcal{X} \rightarrow \BR$.
     \begin{align*}
  \phi_1(x) &= \begin{cases}
@@ -299,6 +495,9 @@
     $$
     \texttt{feature\_vector}[\texttt{"prefix=un+suffix=ing"}] = 1
     $$
+    \pdfnote{
+        With NB, we can still include these features as variables, but we'll have to think about modeling them as a parametrized distribution and handling the sparsity problem during estimation.
+    }
 \end{frame}
 
 \begin{frame}
@@ -324,14 +523,18 @@
 };
         \draw[arrow] (a) -- (b);
     \end{tikzpicture}
+    scores of each class $\rightarrow$ compatibility of an input and a label
+
+    \pause
     Multivector construction of $\Psi(x,y)$:
-    \vspace{6em}
+    $$
+    \Psi(x, 1) \eqdef \pb{\underbrace{0}_{\textstyle y=0}, \underbrace{\phi(x)}_{\textstyle y=1}, \ldots, \underbrace{0}_{\textstyle y=K}}
+    $$
 \end{frame}
 
 \begin{frame}
     {N-gram features}
     Potential problems with the the BoW representation?
-    \vspace{3em}
 
     \pause
     \textbf{N-gram} features:
@@ -339,24 +542,29 @@
         \textit{in for a penny , in for a pound}
     \end{center}
     \begin{itemize}
-        \item Unigram
-        \item Bigram
-        \item Trigram
+        \item Unigram: in, for, a, ...
+        \item Bigram: in/for, for/a, a/penny, ...
+        \item Trigram: in/for/a, for/a/penny, ...
     \end{itemize}
 
     What's the pros/cons of using higher order n-grams?
+    \pdfnote{
+        BoW problem: new york, don't like
+    }
 \end{frame}
 
 \section{Regularization, model selection, evaluation}
 
 \begin{frame}
-    {Bias-variance trade-off}
-    Error decomposition:
+    {Error decomposition}
+    (ignoring optimization error)
+
     \begin{align*}
         \text{risk}(h) - \text{risk}(h^*) = \text{approximation error} + \text{estimation error}
     \end{align*}
-    \vspace{5em}
+    \gray{[board]}
 
+    \pause
     Larger hypothesis class: approximation error $\downarrow$, estimation error $\uparrow$
 
     Smaller hypothesis class: approximation error $\uparrow$, estimation error $\downarrow$
@@ -369,7 +577,7 @@
     Linear predictors: $\sH = \pc{w : w \in \BR^d}$
 
     Reduce the number of features:\\
-    \vspace{7em}
+    \gray{[discussion]}
 
     \pause
     Other predictors:\\
@@ -378,18 +586,25 @@
         \item Degree of polynomials
         \item Number of decision stumps in boosting
     \end{itemize}
+    \pdfnote{
+        stopwords, stemming, filter by frequency
+    }
+    \pdfnote{
+        feature selection (fwd/bwd), L1
+    }
 \end{frame}
 
 \begin{frame}
     {Regularization}
-    Reduce the norm of $w$:
+    Reduce the ``size'' of $w$:
     $$
-    \min_w \underbrace{\frac{1}{N}\sum_{i=1}^N L(x^{(i)}, y^{(i)}, w)}_{\text{average loss}}
-    + \underbrace{\frac{\lambda}{2}\|w\|_2^2}_{\ell_2 \text{ norm}}
+    \min_w \underbrace{\frac{1}{N}\sum_{i=1}^N L(x^{(i)}, y^{(i)}, w)}_{\textstyle \text{average loss}}
+    + \underbrace{\frac{\lambda}{2}\|w\|_2^2}_{\textstyle \ell_2 \text{ norm}}
     $$
 
     Why is small norm good? Small change in the input doesn't cause large change in the output.
-    \vspace{7em}
+
+    \gray{[board]}
 \end{frame}
 
 \begin{frame}
@@ -413,14 +628,19 @@
     \textbf{Hyperparameters}: parameters of the learning algorithm (not the model)
 
     Example: use MLE to learn a logistic regression model using BoW features \\
-    \vspace{7em} 
+    \bigskip
+    \pause
 
     \pause
     How do we select hyperparameters?\\
     \begin{itemize}
-        \item[] Pick those minimizing the training error 
-        \item[] Pick those minimizing the test error 
+        \item[] Pick those minimizing the training error?
+        \item[] Pick those minimizing the test error?
     \end{itemize}
+    \pdfnote{What are the hyperparams in this case?}
+    \pdfnote{
+        Dillema: training error overfit. test error don't know.
+    }
 \end{frame}
 
 \begin{frame}
@@ -428,21 +648,10 @@
     \textbf{Validation set}: a subset of the training data reserved for tuning the learning algorithm (also called the \textbf{development set}).
 
     \textbf{$K$-fold cross validation}\\
-    \vspace{10em}
+    \gray{[board]}
 
+    \pause
     It's important to look at the data and errors during development, but \textcolor{red}{not the test set}.
-\end{frame}
-
-\begin{frame}
-    {Evaluation}
-    \begin{itemize}
-        \itemsep3em
-        \item Accuracy
-        \item Precision
-        \item Recall 
-        \item F1
-        \item Macro vs micro average
-    \end{itemize}
 \end{frame}
 
 \end{document}

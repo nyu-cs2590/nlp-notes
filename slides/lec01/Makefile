@@ -1,10 +1,11 @@
-default: 
-	#$pdflatex overview
-	#$bibtex overview
-	pdflatex basic_ml
-	bibtex basic_ml
-	#pdflatex main
-	#pdflatex main
+TARGET = overview.pdf \
+		 basic_ml.pdf
+
+%.pdf: %.tex
+	pdflatex $<
+	open $@
+
+main: $(TARGET) 
 
 clean:
-	rm *.aux *.log *.out *.bbl *.blg *.pdf
+	rm *.aux *.log *.nav *.out *.snm *.toc *.pdf

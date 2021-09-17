@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -13,6 +13,10 @@
 \usepackage{setspace}
 \usepackage{CJKutf8}
 \usepackage{textcomp}
+\usepackage{subcaption}
+\usepackage{inconsolata}
+\usepackage{xspace}
+
 
 
 %\usepackage{pgfpages}
@@ -38,7 +42,7 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{September 8, 2021}
 
 %\includeonly{conclusion}
 %\includeonlyframes{current}
@@ -55,32 +59,39 @@
                 \node[circle,draw,inner sep=0.7cm,label=below:He He ,
                     path picture={
                         \node at (path picture bounding box.center){
-                            \includegraphics[width=4cm]{figures/hehe.jpg}
+                            \includegraphics[width=3cm]{figures/hehe.jpg}
                         };
                     }] at(-3,0){};
-                \node[circle,draw,inner sep=0.7cm,label=below:Gaomin Wu,
-                    path picture={
-                        \node at (-0.2, -0.3){
-                            \includegraphics[width=4cm]{figures/gaomin.jpg}
-                        };
-                    }](gaomin) at (0, 0) {};
-                \node[circle,draw,inner sep=0.7cm,label=below:Shivesh Ganju,
+                \node[circle,draw,inner sep=0.7cm,label=below:Udit Arora,
                     path picture={
                         \node at (path picture bounding box.center){
-                            \includegraphics[width=4cm]{figures/shivesh.jpg}
+                            \includegraphics[width=2.5cm]{figures/udit.jpg}
+                        };
+                    }](gaomin) at (0, 0) {};
+                \node[circle,draw,inner sep=0.7cm,label=below:Abed Qaddoumi,
+                    path picture={
+                        \node at (path picture bounding box.center){
+                            \includegraphics[width=2.5cm]{figures/abed.jpg}
                         };
                     }](shivesh) at (3, 0) {};
-                \node[circle,draw,inner sep=0.7cm,label=below:Gauri Dhawan,
+                \node[circle,draw,inner sep=0.7cm,label=below:Wenqian Ye,
                     path picture={
-                        \node at (0.7, -0.9){
-                            \includegraphics[width=4cm]{figures/gauri.jpg}
+                        \node at (path picture bounding box.center){
+                            \includegraphics[width=2cm]{figures/wenqian.jpg}
                         };
                     }](gauri) at (6, 0) {};
+                \node[circle,draw,inner sep=0.7cm,label=below:Hyejin Kim,
+                    path picture={
+                        \node at (path picture bounding box.center){
+                            \includegraphics[width=2.3cm]{figures/hyejin.jpg}
+                        };
+                    }](hyejin) at (9, 0) {};
             \end{tikzpicture}
-            \bigskip
+            \medskip
     \begin{itemize}
-        \item Best way to communicate: Piazza (\textcolor{red}{remember to sign up}).
-        \item Lectures and office hours will be online (sadly).
+        \item Best way to communicate with us: Campuswire (\textcolor{red}{remember to sign up}: link and code on Brightspace).
+        \item Lectures will be in person, but with Zoom sessions and recordings.
+        \item Office hours will be online through Zoom (link on calendar).
         \item Let us know if you have accessibility needs.
     \end{itemize}
 \end{frame}
@@ -90,9 +101,10 @@
     \begin{itemize}
         \itemsep1em
         \item Understand the core problems and challenges in NLP
-        \item Formalize tasks as statistical learning problems
+        \item Formalize NLP tasks as statistical learning problems
         \item Have a toolbox for solving different families of NLP problems
         \item Gain hands-on experience in building NLP systems
+        \item Pursue advanced study and be prepared for NLP research in academia or industry
     \end{itemize}
 \end{frame}
 
@@ -100,10 +112,44 @@
     {What we expect you to know}
     \begin{itemize}
         \itemsep1em
-        \item \textbf{Linear algebra}: vector, dot product, gradient computation etc.
+        \item \textbf{Linear algebra}: vector space, vector norm, dot product, gradient etc.
         \item \textbf{Probability and statistics}: conditional probability, expectation, Bayes rule etc.
-        \item \textbf{Basic machine learning}: loss function, gradient descent etc.
-        \item \textbf{Programming}: read and write Python code, use Numpy (and MXNet)
+        \item \textbf{Basic machine learning}: loss function, gradient descent, logistic regression etc.
+        \item \textbf{Programming}: read and write Python code, use Numpy and deep learning libraries
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Homework (40\%)}
+    Four homeworks (10\% each)
+    \begin{itemize}
+        \itemsep1em
+        \item Word vectors and text classification
+        \item Language models and sequence prediction
+        \item Hidden Markov models and part-of-speech tagging 
+        \item Constituent parsing 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Midterm (30\%)}
+    \begin{itemize}
+        \itemsep1em
+        \item Format: online or in-person
+        \item Date: Week 7 (October 20)
+        \item MC questions and written questions
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Project (30\%)}
+    \begin{itemize}
+        \itemsep1em
+        \item Related to NLP (doesn't have to be in the scope of this course)
+        \item New algorithms or models for existing problems
+        \item Applications of NLP techniques 
+        \item Analysis of well-known approaches that leads to new insight
+        \item ML Reproducibility Challenge 2021 (\url{https://paperswithcode.com/rc2021}) 
     \end{itemize}
 \end{frame}
 
@@ -120,24 +166,32 @@
 \begin{frame}
     {The imitation game}
     \begin{figure}
+        \begin{subfigure}[b]{0.4\textwidth}
         \includegraphics[height=3cm]{figures/turing-test}
+        \end{subfigure}\hfill
+        \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[height=4cm]{figures/turing}
+        \end{subfigure}
     \end{figure}
 
-    \nl{I believe that in about \emph{fifty years'} time it will be possible to programme computers, with a \emph{storage capacity of about $10^9$}, to make them play the imitation game so well that an average interrogator will not have more than 70 percent chance of making the right identification after five minutes of questioning.} Turing (1950)
+    \nl{I believe that in about \blue{fifty years'} time it will be possible to programme computers, with a \blue{storage capacity of about $10^9$}, to make them play the imitation game so well that an average interrogator will not have more than 70 percent chance of making the right identification after five minutes of questioning.} Turing (1950)
     %I believe that at the end of the century the use of words and general educated opinion will have altered so much that one will be able to speak of machines thinking without expecting to be contradicted.'' 
 
+    \pause\medskip
+    \red{Caution}: Humanlikeness can be easy to fake.
 \end{frame}
 
 \begin{frame}
     {The Georgetown-IBM experiment}
     \begin{itemize}
-        \item The program:\\
+        \item The Russian-English machine translation program:\\
             \begin{center}
             \includegraphics[height=3cm]{figures/ibm-experiment}
             \end{center}
-        \item 250 words
-        \item 6 grammar rules, e.g.\\
-            ``If first code is 110, is third code associated with preceding complete word equal to 21? If so, reverse order of appearance of words in output (i.e., word carrying 21 should follow that carrying 110)---otherwise, retain order.''
+        \item A vocabulary of \blue{250 words}
+        \item Using \blue{6 grammar rules}, \eg\\
+            \texttt{
+                If first code is 110, is third code associated with preceding complete word equal to 21? If so, reverse order of appearance of words in output (i.e., word carrying 21 should follow that carrying 110)---otherwise, retain order.}
     \end{itemize}
 \end{frame}
 
@@ -149,32 +203,44 @@
     \end{itemize}
     \bigskip
     \centering
-    \begin{simpleblock}{}
-    Human: Well, my boyfriend made me come here.\\
-    ELIZA: Your boyfriend made you come here?\\
-    Human: He says I'm depressed much of the time.\\
-    ELIZA: I am sorry to hear you are depressed.\\
-    Human: It's true. I'm unhappy.\\
-    ELIZA: Do you think coming here will help you not to be unhappy?
-    \end{simpleblock}
+    \begin{table}
+        \begin{tabular}{ll}
+            Human: & Well, my boyfriend made me come here.\\
+    ELIZA: & Your boyfriend made you come here?\\
+    Human: & He says I'm depressed much of the time.\\
+    ELIZA: & I am sorry to hear you are depressed.\\
+    Human: & It's true. I'm unhappy.\\
+    ELIZA: & Do you think coming here will help you not to be unhappy?
+        \end{tabular}
+    \end{table}
 \end{frame}
 
 \begin{frame}
     {SHRDLU}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
     \begin{itemize}
         \item Built by Terry Winograd at MIT in 1968.
+        \item A person instructs the computer to build structures in a blocks world.
+        \item Grounding, coreference resolution, question answering, semantic parsing etc. 
     \end{itemize}
+        \end{column}
+        \begin{column}{0.4\textwidth}
     \begin{center}
     \includegraphics[height=3cm]{figures/shrdlu}
     \end{center}
-    \begin{simpleblock}{}
-        Person: Pick up a big red block.\\
-Computer: OK.\\
-Person: Grasp the pyramid.\\
-Computer: I DON'T UNDERSTAND WHICH PYRAMID YOU MEAN.\\
-Person (changing their mind): Find a block which is taller than the one you are holding and put it into the box.\\
-Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM HOLDING.
-    \end{simpleblock}
+        \end{column}
+    \end{columns}
+    \begin{table}
+        \begin{tabular}{lp{12cm}}
+            Person:& Pick up a big red block.\\
+            Computer:& OK.\\
+            Person:& Grasp the pyramid.\\
+            Computer:& I don't understand which pyramid you mean.\\
+            Person:& (changing their mind) Find a block which is taller than the one you are holding and put it into the box.\\
+            Computer:& By "it", i assume you mean the block which is taller than the one i am holding.
+    \end{tabular}
+    \end{table}
 \end{frame}
 
 \begin{frame}
@@ -185,7 +251,7 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
             \nl{Within the very near future---much less than twenty-five years---we shall have the technical capability of substituting machines for any and all human functions in organizations.}
         \item Disappointing results due to
             \begin{itemize}
-                \item \textbf{Limited computation}: hardware limitation 
+                \item \textbf{Limited computation}: hardware has limited speed and memory 
                 \item \textbf{Combinatorial explosion}: algorithms are intractable in realistic settings
                 \item \textbf{Underestimated complexity}: ambiguity, commonsense knowledge etc.
             \end{itemize}
@@ -199,6 +265,7 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
         \item Notable progress in MT from IBM (neglected knowlege of linguistics).
         \item HMMs widely used for speech recognition.\\
             \nl{Every time I fire a linguist, the performance of the speech recognizer goes up.}---Frederick Jelinek.
+        \item The paradigm shift: expert knowledge + rules $\rightarrow$ data + features
         \item Machine learning is the main driving force of NLP today.
     \end{itemize}
 \end{frame}
@@ -236,17 +303,18 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
             \begin{itemize}
                 \itemsep1em
                 \item How to define metrics?
-                    \medskip
+                    \\\medskip
                     \begin{tabular}{lcl}
-                        I work \emph{at} NYU. & vs & I work \emph{for} NYU. \\
-                        This is good. & vs & This is \emph{actually} good.
+                        I work \blue{at} NYU. & vs & I work \blue{for} NYU. \\
+                        This is good. & vs & This is \blue{actually} good.
                     \end{tabular}
                 \item How to define transformations?\\
                     \medskip
-                    \begin{tabular}{p{5cm}cp{5cm}}
+                    \begin{tabular}{p{7cm}cp{5cm}}
                     The food is okay. & $\rightarrow$ & The food is awesome! \\
                     They made a brief return to Cambridge to drop the book. & $\rightarrow$& They returned.
                     \end{tabular}
+                \item In general, hard to represent text as mathematical objects.
             \end{itemize}
     \end{itemize}
     \begin{table}
@@ -256,12 +324,12 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
 \begin{frame}
     {Why is language hard?}
     \begin{itemize}
-        \itemsep1em
         \item \textbf{Compositional}
             \begin{itemize}
+                \item The whole is built from parts (chars, words, sentences, paragraphs, documents...)
                 \item How to generalize when we don't see all possible combinations?\\
-                    \medskip
-                Vocabulary (from [Lake+ 2018]):\\
+                \item An example from [Lake+ 2018]\\
+                Vocabulary:\\
                     \begin{itemize}
                     \item[]\{jump, walk, turn, once, twice, left, right, before, after, and\}
                     \end{itemize}
@@ -280,22 +348,18 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
 \begin{frame}
     {Why is language hard?}
     \begin{itemize}
-        \itemsep1em
         \item \textbf{Sparse} 
             \begin{itemize}
-                \item How to handle the long tail?\\
-                \medskip
-                BoA's financial assistant Erica:\\
-                \begin{itemize}
-                    \item[] 
-                        \hyperlink{https://www.aiqudo.com/2019/06/28/voice-success-story-erica-bank-america/}{The bank ``learned [that] there are over 2,000 different ways to ask us to move money.''}
-                \end{itemize}
-                \medskip
-                Zipf's law:\\
-                \begin{itemize}
-                    \item[] 
-                        $\text{word frequency} \propto \frac{1}{\text{rank}}$
-                \end{itemize}
+                \item How to handle the long tail?
+                \item Zipf's law: $\text{word frequency} \propto \frac{1}{\text{rank}}$
+                    \begin{figure}
+                        \includegraphics[height=3cm]{figures/zipf}
+                    \end{figure}
+                \item Many linguistic phenomena follow Zipf's law\\
+                    BoA's financial assistant Erica:\\
+                    \textit{The bank ``learned [that] there are over 2,000 different ways to ask us to move money.''}\footnote[frame]{
+                        \url{https://www.aiqudo.com/2019/06/28/voice-success-story-erica-bank-america/}
+                    }
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -309,8 +373,8 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
                 \medskip
                 \begin{itemize}
                     \itemsep2em
-                    \item[] Bass: fish? guitar? frequency? 
-                    \item[] I shot an elephant in my pajamas: who is in the pajamas?
+                    \item[] Bass: fish? guitar? frequency? (word sense disambiguiation)
+                    \item[] I shot an elephant in my pajamas: who is in the pajamas? (PP attachment)
                     \item[] The spirit is willing but the flesh is weak.\\
                         $\rightarrow$ 
                         The vodka is strong but the meat is rotten.
@@ -322,23 +386,31 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
 \section{Course overview}
 \begin{frame}
     {Overview}
+    \begin{enumerate}
+        \item Representation of text: string $\rightarrow$ feature vector
+        \item Structured prediction: predicting sequences, trees, graphs
+        \item Neural networks for NLP: the deep learning tsunami [Manning, 2015]
+    \end{enumerate}
 \end{frame}
 
 \begin{frame}
     {Representation of text}
-    \begin{itemize}
-        \itemsep2em
-        \item[] \textbf{Symbolic}: a set of objects (concepts)
-            $$
-            \text{a white kitten} = \{\text{white}, \text{a}, \text{kitten}, \text{noun phrase}\}
-            $$
-        \item[] \textbf{Distributed}: a list of components (properties)
-            \begin{align*}
-                \text{a white kitten} &= [\text{COLOR=white}, \text{SIZE=small} \\
-                &\text{OBJECT=kitten}, \text{NUMBER=1}]
-            \end{align*}
-        \item[] Pros and cons?
-    \end{itemize}
+        \textbf{Symbolic}: structured objects/concepts\\[1ex]
+            %$$$
+            %$\text{a white kitten} = \{\text{white}, \text{a}, \text{kitten}, \text{noun phrase}\}
+            %$$$
+        \textbf{Distributed/Connectionist}: patterns of latent properties
+            %\begin{align*}
+            %    \text{a white kitten} &= [\text{\textCOLOR=0.1}, \text{SIZE=0.5} \\
+            %    &\text{OBJECT=1.2}, \text{NUMBER=0.3}]
+            %\end{align*}
+
+    \begin{figure}
+        \includegraphics[height=3cm]{figures/apple}
+        \caption{\url{https://web.media.mit.edu/~minsky/papers/SymbolicVs.Connectionist.html}}
+    \end{figure}
+
+    Pros and cons?
 \end{frame}
 
 \begin{frame}
@@ -346,20 +418,12 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
     \begin{itemize}
         \item Named entity recognition\\
         {\setstretch{2.5}
-            New York University is a private research university based in New York City. It is founded in 1831 by Albert Gallatin.\par
-            CT of the maxillofacial area showed no facial bone fracture. CT of the brain showed no acute changes.\par
+            $\underbrace{\text{New York University}}_{{\textstyle org}}$ is a private research university based in $\underbrace{\text{New York City}}_{{\textstyle loc}}$.
+            It is founded in $\underbrace{\text{1831}}_{{\textstyle year}}$ by $\underbrace{\text{Albert Gallatin}}_{{\textstyle people}}$.\par
+            \pause
+            $\underbrace{\text{CT of the maxillofacial area}}_{{\textstyle test}}$ showed no facial $\underbrace{\text{bone fracture}}_{{\textstyle symptom}}$.
+            $\underbrace{\text{CT of the brain}}_{{\textstyle test}}$ showed no acute changes.\par
         }
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    {Structured prediction: sequences}
-    \begin{itemize}
-        \item Anaphora resolution\\
-            {\setstretch{2.5}
-                John had a great evening meeting with \emph{his} high school friends.\par
-                The city councilmen refused the demonstrators a permit because \emph{they} feared violence.\par
-            }
     \end{itemize}
 \end{frame}
 
@@ -370,12 +434,25 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
             \medskip
             I would like to book a ticket from New York to San Francisco on Christmas eve.
             \begin{itemize}
+                \itemsep1ex
                 \item[]action=\texttt{book\_ticket}
-                \item[]departure city=
-                \item[]destination city=
-                \item[]date=
+                \item[]departure city=\texttt{New York}
+                \item[]destination city=\texttt{San Francisco}
+                \item[]date=\texttt{Christmas eve}
                 \item[]time=
             \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Structured prediction: sequences}
+    \begin{itemize}
+        \item Anaphora resolution\\[1em]
+            %{\setstretch{2.5}
+                \blue{John} had a great evening meeting with \blue{his} high school friends.\par
+                \pause\medskip
+                The \green{city councilmen} refused the \red{demonstrators} a permit because \green{they} feared violence.\par
+            %}
     \end{itemize}
 \end{frame}
 
@@ -399,16 +476,16 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    {Structured prediction: trees}
-    \begin{itemize}
-        \item Semantic parsing \\
-            \vspace{5cm}
-            \begin{tabular}{lllll}
-                Which& states& border& NY& ?
-            \end{tabular}
-    \end{itemize}
-\end{frame}
+%\begin{frame}
+%    {Structured prediction: trees}
+%    \begin{itemize}
+%        \item Semantic parsing \\
+%            \vspace{5cm}
+%            \begin{tabular}{lllll}
+%                Which& states& border& NY& ?
+%            \end{tabular}
+%    \end{itemize}
+%\end{frame}
 
 \begin{frame}
     {Text generation}
@@ -441,20 +518,29 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
 \end{frame}
 
 \begin{frame}
-    {Predict structures}
+    {Key questions in structured prediction}
     \begin{itemize}
-        \itemsep4em
-        \item Modeling
+        %\itemsep4em
+        \item \textbf{Modeling}
             \begin{itemize}
                 \item[] How to model iteractions among substructures?
+                    $$
+                    \text{score}(\text{sentence}, \text{structure})
+                    $$
             \end{itemize}
-        \item Learning 
+        \item \textbf{Learning} 
             \begin{itemize}
-                \item[] How to efficiently learn the model parameters?
+                \item[] How to efficiently learn the model parameters given data?
+                    $$
+                    \max_{\text{parameters}} \text{score}(\text{sentence}, \text{gold structure})
+                    $$
             \end{itemize}
-        \item Inference 
+        \item \textbf{Inference} 
             \begin{itemize}
                 \item[] How to efficiently find the best structure given a learned model? 
+                    $$
+                    \max_{\text{structure}} \text{score}(\text{sentence}, \text{structure})
+                    $$
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -468,25 +554,25 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    {Beyond individual sentences: discourse}
-    What makes a collection of sentences \textbf{coherent}?
-    \begin{itemize}
-        \item[] John took a train from Paris to Istanbul. He likes spinach.
-        \item[] Jane took a train from Paris to Istanbul. She had to attend a conference.
-    \end{itemize}
+%\begin{frame}
+%    {Beyond individual sentences: discourse}
+%    What makes a collection of sentences \textbf{coherent}?
+%    \begin{itemize}
+%        \item[] John took a train from Paris to Istanbul. He likes spinach.
+%        \item[] Jane took a train from Paris to Istanbul. She had to attend a conference.
+%    \end{itemize}
+%
+%    \begin{center}
+%    \begin{tikzpicture}
+%        \node (a) at(0,0){\includegraphics[height=4cm]{figures/conversation}};
+%        \node (b) at(3,0) {\includegraphics[height=4cm]{figures/novel}};
+%        \node (c) at(6,0) {\includegraphics[height=4cm]{figures/paper}};
+%    \end{tikzpicture}
+%    \end{center}
+%\end{frame}
 
-    \begin{center}
-    \begin{tikzpicture}
-        \node (a) at(0,0){\includegraphics[height=4cm]{figures/conversation}};
-        \node (b) at(3,0) {\includegraphics[height=4cm]{figures/novel}};
-        \node (c) at(6,0) {\includegraphics[height=4cm]{figures/paper}};
-    \end{tikzpicture}
-    \end{center}
-\end{frame}
-
 \begin{frame}
-    {Beyond individual sentences: grounding}
+    {Beyond text: grounding}
     Connect language to the world
 
     \begin{center}
@@ -497,16 +583,5 @@ Computer: BY "IT", I ASSUME YOU MEAN THE BLOCK WHICH IS TALLER THAN THE ONE I AM
     \end{center}
 \end{frame}
 
-\begin{frame}
-    {Project}
-    \begin{itemize}
-        \itemsep1em
-        \item Related to NLP (doesn't have to be in the scope of this course)
-        \item New algorithms or models for existing problems
-        \item Novel applications of NLP techniques 
-        \item Analysis of well-known approaches that leads to new insight
-        \item Overall rule: should increase our knowledge in some way
-    \end{itemize}
-\end{frame}
 
 \end{document}

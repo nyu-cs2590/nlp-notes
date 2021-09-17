@@ -11,11 +11,11 @@
     - Abed Qaddoumi, amq259@nyu.edu
     - Wenqian Ye, wy2029@nyu.edu
 - Office hours: 
-    - He He: Thur 4-5pm EST (Rm 605, CDS)
-    - Udit Arora: TBD 
-    - Hyejin Kim: TBD
-    - Abed Qaddoumi: TBD
-    - Wenqian Ye: TBD
+    - He He: Thur 4-5pm EST (Zoom)
+    - Udit Arora: Tue 3-4pm EST (Zoom) 
+    - Hyejin Kim: Wed 3-4pm EST (Zoom)
+    - Abed Qaddoumi: Mon 3-4pm EST (Zoom)
+    - Wenqian Ye: Fri 3-4pm EST (Zoom)
 - Calender: [subscribe](https://calendar.google.com/calendar/u/3?cid=Y19jdmFnYmJhZWxlZHE4dTV2bDc0MGIwdGhzMEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t) to get up-to-date times on lectures/office hours/due dates/etc.
 
 ### Accessibility

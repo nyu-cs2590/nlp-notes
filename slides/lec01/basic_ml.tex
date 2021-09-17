@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -42,7 +42,7 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{September 8, 2021}
 
 \begin{document}
 
@@ -53,8 +53,24 @@
 \section{Generalization}
 
 \begin{frame}
-    {Rules vs data}
-    Example: spam filter
+    {Rule-based approach}
+\begin{figure}
+\includegraphics[height=0.7\textheight]{figures/geron-fig1-1}
+    \caption{{Fig 1-1 from \emph{Hands-On Machine Learning with Scikit-Learn and TensorFlow} by Aurelien Geron (2017).}}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+    {Machine learning approach}
+\begin{figure}
+\includegraphics[height=0.7\textheight]{figures/geron-fig1-2}
+    \caption{{Fig 1-2 from \emph{Hands-On Machine Learning with Scikit-Learn and TensorFlow} by Aurelien Geron (2017).}}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+    {Example: spam filter}
+    
     \begin{itemize}
         \itemsep1em
         \item Rules
@@ -65,8 +81,14 @@
                 \item[] ... 
             \end{itemize}
         \item Learning from data
-            \vspace{5em}
+            \begin{enumerate}
+                \item Collect emails labeled as spam or non-spam 
+                \item (Design features) 
+                \item Learn a predictor
+            \end{enumerate}
     \end{itemize}
+    \medskip
+    Pros and cons?
 \end{frame}
 
 \begin{frame}
@@ -77,30 +99,53 @@
             \begin{itemize}
                 \item[] Scraping, crowdsourcing, expert annotation
             \end{itemize}
-        \item Generalize to unseen samples
+        \item \blue{Generalize} to unseen samples (test set)
             \begin{itemize}
-                \item[] \alert{Unknown} data generating distribution: $\sD$ over $\sX\times\sY$
-                \vspace{5em}
+                \item Assume that there is a (unknown) data generating distribution: $\sD$ over $\sX\times\sY$
+               \item Training set: $m$ samples from $\sD$ $\pc{(x^{(i)}, y^{(i)})}_{i=1}^m$
+               \item Learn model $h\colon \sX \rightarrow \sY$
+               \item Goal: $\text{minimize}\quad 
+                   \mathbb{E}_{(x,y)\sim\sD}\pb{\text{error}(h,x,y)}$ (estimated on the test set)
             \end{itemize}
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     {Empirical risk minimization (ERM)}
-    Minimize the average loss on the training set over $\sH$
-    \vspace{10em}
+    \begin{itemize}
+        \itemsep1em
+        \item Our goal is to minimize the expected loss (\textbf{risk}), but it cannot be computed (why?).
+        \item How can we estimate it?
+    \pause
+
+\item Minimize the {average loss} (\textbf{empirical risk}) on the training set %over $\sH$
+    $$
+    \min_h \frac{1}{m}\sum_{i=1}^m \text{error}(h, x^{(i)}, y^{(i)})
+    $$
+
+\item In the limit of infinite samples, empirical risk converges to risk (LLN).
+        \item Given limited data though, can we generalize by ERM?
+    \end{itemize}
 \end{frame}
 
-\begin{frame}
-    {Error decomposition}
-\end{frame}
+%\begin{frame}
+%    {Error decomposition}
+%\end{frame}
 
 \begin{frame}
     {Overfitting vs underfitting}
-    Trade-off between complexity of $\sH$ (approximiation error) and estimation error
+    \begin{itemize}
+        \item Trivial solution to (unconstrained) ERM: \red{memorize} the data points
+        \item Need to extrapolate information from one part of the input space to unobserved parts!
+    \end{itemize}
 
     \vspace{10em}
-    \emph{Question for us}: how to choose a good $\sH$ for certain domains
+    \pause
+    \begin{itemize}
+        \item Constrain the prediction function to a subset, i.e.\ a \textbf{hypothesis space} $h\in \sH$.
+        \item Trade-off between complexity of $\sH$ (approximiation error) and estimation error
+        \item Question for us: how to choose a good $\sH$ for certain domains
+    \end{itemize}
 \end{frame}
 
 \section{Optimization}
@@ -110,18 +155,20 @@
     \begin{enumerate}
         \itemsep2em
         \item Obtain training data $D_{\text{train}}=\pc{(x^{(i)}, y^{(i)})}_{i=1}^n$.
-        \item Choose a loss function $L$ and a hypothesis class $\sH$.
-        \item Learn a predictor by minimizing the empirical risk.
+        \item Choose a loss function $L$ and a hypothesis class $\sH$ (domain knowledge).
+        \item Learn a predictor by minimizing the empirical risk (optimization).
     \end{enumerate}
 \end{frame}
 
 \begin{frame}
     {Gradient descent}
     \begin{itemize}
-        \item $w \leftarrow w - \eta\nabla_w F(w)$
+        \item The gradient of a function $F$ at a point $w$ is the direction of fastest increase in the function value
+        \item To minimze $F(w)$, move in the opposite direction
+        $$w \leftarrow w - \eta\nabla_w F(w)$$
         \item Converge to a local minimum (also global minimum if $F(w)$ is \textbf{convex}) with carefully chosen step sizes
     \end{itemize}
-    \vspace{10em}
+    \vspace{9em}
 \end{frame}
 
 \begin{frame}
@@ -131,8 +178,8 @@
             $$
             f(\theta x + (1-\theta)y) \le \theta f(x) + (1-\theta) f(y)  \;.
             $$
-        \item $f$ is concave if $-f$ is convex.\\
         \vspace{6em}
+        \item $f$ is concave if $-f$ is convex.\\
         \item Locally optimal points are also globally optimal.
         \item For unconstrained problems, $x$ is optimal iff $\nabla f(x) = 0$.
     \end{itemize}
@@ -141,14 +188,15 @@
 \begin{frame}
     {Stochastic gradient descent}
     \begin{itemize}
-        \item \textbf{Gradient descent (GD)}
+        \item \textbf{Gradient descent (GD)} for ERM
             $$
-            w \leftarrow w - \eta\nabla_w \underbrace{\sum_{i=1}^n L(x^{(i)}, y^{(i)}, f_w)}_{\text{training loss}}
+            w \leftarrow w - \eta\nabla_w \underbrace{\sum_{i=1}^n L(x^{(i)}, y^{(i)}, f_w)}_{\textstyle{\text{training loss}}}
             $$
-        \item \textbf{Stochastic gradient descent (SGD)}\\
+            \pause
+        \item \textbf{Stochastic gradient descent (SGD)}: take noisy but faster steps\\
             \begin{align*}
                 \text{For each } &(x, y) \in D_{\text{train}}:\\
-                &w \leftarrow w - \eta\nabla_w \underbrace{L(x, y, f_w)}_{\text{example loss}}
+                &w \leftarrow w - \eta\nabla_w \underbrace{L(x, y, f_w)}_{\textstyle{\text{example loss}}}
             \end{align*}
     \end{itemize}
 \end{frame}
@@ -183,20 +231,23 @@
 \begin{frame}
     {Zero-one loss}
     \begin{itemize}
-        \item Settings
+        \item Binary classification: $y\in\pc{+1, -1}$.
             \begin{itemize}
-                \item[] Binary classification: $y\in\pc{+1, -1}$.
-                \item[] Scorer $f_w\colon \sX \rightarrow \bR$ parametrized by $w \in \bR^d$.
-                \item[] Output prediction: $\text{sign}(f_w(x))$.
+                \item Model: $f_w\colon \sX \rightarrow \bR$ parametrized by $w \in \bR^d$.
+                \item Output prediction: $\text{sign}(f_w(x))$.
             \end{itemize}
         \item Zero-one (0-1) loss
-            $$
-            L(x, y, f_w) = \1\pb{yf_w(x) \le 0}
-            $$
+            \begin{align}
+                L(x, y, f_w) = \1\pb{\text{sign}(f_w(x)) = y} 
+                %= \1\pb{\underbrace{yf_w(x)}_{\textstyle\text{margin}}\le 0}
+                = \1\pb{{yf_w(x)} \le 0}
+            \end{align}
     \end{itemize}
     \begin{figure}
-        \includegraphics[height=4cm]{figures/loss}
+        \includegraphics[height=4cm]{figures/loss.Zero_One.png}
     \end{figure}
+    \pause
+    \red{Not feasible for ERM}
 \end{frame}
 
 \begin{frame}
@@ -205,10 +256,13 @@
     L(x,y,f_w) = \max(1-yf_w(x), 0)
     $$
     \begin{figure}
-        \includegraphics[height=4cm]{figures/loss}
+        \includegraphics[height=4cm]{figures/loss.Zero_One.Hinge.png}
     \end{figure}
-    Subgradient:\\
-    \vspace{4em}
+    \begin{itemize}
+        \item Loss is zero if margin is larger than 1
+        \item Not differentiable at $\text{margin}=1$
+        \item Subgradient: $\pc{g\colon f(x) \ge x_0 + g^T(x-x_0)}$
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -217,8 +271,12 @@
     L(x,y,f_w) = \log(1+e^{-yf_w(x)})
     $$
     \begin{figure}
-        \includegraphics[height=4cm]{figures/loss}
+        \includegraphics[height=4cm]{figures/loss.Zero_One.Hinge.Logistic.png}
     \end{figure}
+    \begin{itemize}
+        \item Differentiable
+        \item Always wants more margin (loss is never 0)
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
