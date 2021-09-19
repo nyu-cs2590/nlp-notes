@@ -3,7 +3,7 @@
 **Note**: Future schedule is subject to minor change.
 
 #### Assignments
-- Assignment 1: Representing and classifying text [[hw1.tgz](assignments/hw1.tgz)][[hw1.pdf](assignments/hw1.pdf)] (Due on Sep 29)
+- Assignment 1: Representing and classifying text [hw1.tgz](assignments/hw1.tgz)[hw1.pdf](assignments/hw1.pdf) (Due on Sep 29)
 
 #### Introduction
 
@@ -13,7 +13,7 @@
 #### Representation of text
 
 - Week 2 (Sep 15). **Text classification**: bag-of-words, naive Bayes models, logistic regression
-    - [slides](slides/lec02/main.pdf) [notes](notes/text_classification.html)
+    - [slides](slides/lec02/main.pdf) [board](slides/lec02/board.pdf) [recording](https://nyu.zoom.us/rec/share/H3I606oHp61RYHbbUni0nuEYsrw3PChZ9HSv94LRAS20zxvt_HmK5Tl2Hbvbb2aJ.uQjVIELIo3GqfZfe) [notes](notes/text_classification.html)
 - Week 3 (Sep 22). **Distributed representation**: vector space models, Brown clusters, neural word embeddings
     - [notes](notes/distributed_representation.html)
 
