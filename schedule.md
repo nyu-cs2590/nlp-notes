@@ -15,7 +15,7 @@
 - Week 2 (Sep 15). **Text classification**: bag-of-words, naive Bayes models, logistic regression
     - [slides](slides/lec02/main.pdf) [board](slides/lec02/board.pdf) [recording](https://nyu.zoom.us/rec/share/H3I606oHp61RYHbbUni0nuEYsrw3PChZ9HSv94LRAS20zxvt_HmK5Tl2Hbvbb2aJ.uQjVIELIo3GqfZfe) [notes](notes/text_classification.html)
 - Week 3 (Sep 22). **Distributed representation**: vector space models, Brown clusters, neural word embeddings
-    - [notes](notes/distributed_representation.html)
+    - [slides](slides/lec03/main.pdf) [board](slides/lec03/board.pdf) [recording](https://nyu.zoom.us/rec/share/kT5UNBkHz0cz9slgt1fhXXpx3mwtL2XeoBDejR4Q6sEUek4yFSDRD05h24OR5No.oKxFmakrbLrENoS6) [notes](notes/distributed_representation.html)
 
 #### Predicting sequences
 

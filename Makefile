@@ -4,7 +4,7 @@ build:
 	d2lbook build html
 
 deploy_slides:
-	cp slides/lec02/*.pdf ~/website/hhexiy.github.io/nlp/2021/slides/lec02
+	cp slides/lec03/*.pdf ~/website/hhexiy.github.io/nlp/2021/slides/lec03
 	#cp -r _build/html/schedule.html ~/website/hhexiy.github.io/nlp/
 	#mv ~/website/hhexiy.github.io/nlp/_static ~/website/hhexiy.github.io/nlp/static
 	#mv ~/website/hhexiy.github.io/nlp/_sources ~/website/hhexiy.github.io/nlp/sources
