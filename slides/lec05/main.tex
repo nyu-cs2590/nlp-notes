@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,8 +8,17 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+%\newcommand{\pdfnote}[1]{}
+%\usepackage[colorlinks=true]{hyperref}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -39,18 +48,40 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{October 6, 2021}
 
 \begin{document}
 \begin{frame}
 \titlepage
 \end{frame}
 
+\begin{frame}
+    {Last week}
+    Goal: probabilistic modeling of (text) sequences
+
+    N-gram models\\
+    \begin{itemize}
+        \item Markov assumption: the next word depends on limited prior context
+        \item Tackling sparsity
+            \begin{itemize}
+                \item Discounting: allocate some probability mass to unseen events
+                \item backoff/interpolation: use dynamic context
+            \end{itemize}
+    \end{itemize}
+
+    LM as sequence classification\\
+    \begin{itemize}
+        \item Log-linear LM: represent context by a (handcrafted) feature vector
+        \item Feed-forward neural LM: represent context by concatenated word vectors
+        \item Recurrent neural LM: represent context by a recurrently updated state
+    \end{itemize}
+\end{frame}
+
 \section{Introduction}
 
 \begin{frame}
     {Sequence labeling}
-    Language modeling as sequence labeling:
+    Language modeling as sequence labeling:\\
     \begin{tikzpicture}
         \foreach \i\j\k in {0/*/the, 1/the/fox, 2/fox/jumped, 3/jumped/over, 4/over/the, 5/the/dog, 6/dog/\texttt{STOP}}{
             \node[anchor=base] (i\i) at (1.5*\i, 0) {\j};
@@ -60,7 +91,7 @@
     \end{tikzpicture}
 
     \bigskip
-    \textbf{Part-of-speech (POS) tagging}:
+    \textbf{Part-of-speech (POS) tagging}:\\
     \begin{tikzpicture}
         \foreach \i\j\k in {0/the/DT, 1/fox/NN, 2/jumped/VBD, 3/over/IN, 4/the/DT, 5/dog/NN}{
             \node[anchor=base] (i\i) at (1.5*\i, 0) {\j};
@@ -68,6 +99,9 @@
             \path[draw,arrow] (i\i.north) -- (o\i.south);
         }
     \end{tikzpicture}
+    \pdfnote{
+        One difference bewteen left-to-right LM and sequence labeling is that in sequence labling we typically use the whole sentence as input when predicting each label.
+    }
 \end{frame}
 
 \begin{frame}
@@ -103,6 +137,10 @@
             \begin{itemize}
                 \item \textbf{Open class tags}: content words such as nouns, verbs, adjectives, adverbs etc.
                 \item \textbf{Closed class tags}: function words such as pronouns, determiners, auxiliary verbs etc. 
+                \pdfnote{
+                    Open class: class size can grow.
+                    Close class: class size is fixed.
+                }
             \end{itemize}
         \item \href{https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html}{Penn Treebank tagset} (developed for English, 45 tags)
     \end{itemize}
@@ -120,16 +158,23 @@
     A dumb approach: look up each word in the dictionary and return the most common POS tag.
 
     \pause
-    Problem: \emph{ambiguity}. Example?
+    Problem: \blue{ambiguity}. Example?
 
     \begin{figure}
         \includegraphics[height=3cm]{figures/pos-ambiguity}
     \end{figure}
     \vspace{-2em}
+    \pdfnote{
+        The majority word types (86\%) are unambiguous.
+        However, the ambigous word types accounts for more than half (55\%) of the tokens,
+        which means that these are common words.
+        So the ambiguity will result in tagging error in many sentences.
+    }
     Most types are unambiguous, but ambiguous ones are common words!
 
     Most common tag: 92\% accuracy on WSJ (vs ~97\% SOTA)\\
-    \emph{Always compare to the majority class baseline.}
+    \blue{Always compare to the majority class baseline.}
+    \pdfnote{In practice, the dictionary approach is a very strong baseline.}
 
 \end{frame}
 
@@ -137,29 +182,39 @@
 
 \begin{frame}
     {Multiclass classifcation}
-    \emph{Task}: given $x=(x_1,\ldots,x_m) \in \sX^m$, predict
-    $y=(y_1,\ldots,y_m) \in \sY^m$.\\
-    Predictor: $y_i=h(x, i) \quad \forall i$
+    \beamerblue{Task}: given $x=(x_1,\ldots,x_m) \in \sX^m$, predict
+    $y=(y_1,\ldots,y_m) \in \sY^m$.
+
+    \beamerblue{Predictor}: \emph{independent} classification problem at each position $y_i=h(x, i) \quad \forall i$
 
     Multinomial logistic regression ($\theta\in\BR^d$):
     $$
-    p(y_i\mid x) = \frac{\exp\pb{\theta\cdot\phi(x,i,y_i)}}
+    p(y_i\mid x) = \onslide<2->{
+    \frac{\exp\pb{\theta\cdot\phi(x,i,y_i)}}
     {\sum_{y'\in\sY} \exp\pb{\theta\cdot\phi(x,i,y')}}
+    }
     $$
 
     \begin{overprint}
     \onslide<1>
     Feature templates:\\
-    \vspace{8em}
+        \begin{itemize}
+            \item[] $T(x,i,y) = $
+                \pdfnote{x[i],y: learning the majority baseline}
+                \pdfnote{suffix of x, neighboring words of x}
+        \end{itemize}
+    \vspace{6em}
     \onslide<2>
         \begin{itemize}
             \itemsep1em
             \item Learning: MLE (is the objective convex?)
-            \item Inference: trivial
+            \item Inference: trivial ($\argmax_{y\in\sY}p(y\mid x)$)
             \item Does not consider dependency among $y_i$'s.
                 \begin{itemize}
                     \item[] \texttt{DT} \texttt{NN} ?
+                        \pdfnote{DT NN VB}
                     \item[] \texttt{B-<org>} \texttt{I-<org>} ?
+                        \pdfnote{B I I}
                 \end{itemize}
         \end{itemize}
     \end{overprint}
@@ -169,7 +224,7 @@
     {Maximum-entropy markov model (MEMM)}
     Model the joint probability of $y_1, \ldots, y_m$:
     $$
-    p(y_1,\ldots,y_m\mid x) = \prod_{i=1}^m p(y_i\mid y_{i-1}, x) \;.
+    p(y_1,\ldots,y_m\mid x) = \prod_{i=1}^m p(y_i\mid \mblue{y_{i-1}}, x) \;.
     $$
     \vspace{-1em}
     \begin{itemize}
@@ -183,32 +238,60 @@
     {\sum_{y'\in\sY} \exp\pb{\theta\cdot\phi(x,i,y',{\color{blue}y_{i-1}})}}
     $$
 
-    New feature templates? (See J\&M 8.5.1)
+    Learning: MLE (each sequence produces $m$ classification examples)
+    \pdfnote{
+        Note that we added the new feature, but with the Markov assumption, we still have m independent classification problem to solve, so learning doesn't really change.
+    }
+\end{frame}
+
+\begin{frame}
+    {Features for POS tagging}
+    Interaction between word and tags:\\[1ex]
+    \begin{figure}
+        \includegraphics[height=2cm]{figures/feature-template-1}
+    \end{figure}
+
+    Word shape feature that help with unknown words:\\[1ex]
+    \begin{figure}
+        \includegraphics[height=2cm]{figures/feature-template-2}
+    \end{figure}
+
+    \pdfnote{
+        Example: well-defined, PM-abc-103-1 (X-x-d-d)
+    }
+
 \end{frame}
 
 \begin{frame}
     {Inference}
+    \pdfnote{
+        Conditioning on the previous lable allows us to add new features, and learning is the same as before.
+        The main complexity introduced happens in inference.
+    }
     \textbf{Decoding / Inference}:
     \begin{align*}
         & \argmax_{y\in\sY^m} \prod_{i=1}^m p(y_i\mid y_{i-1}, x) \\
         &= \argmax_{y\in\sY^m} \sum_{i=1}^m \log p(y_i\mid y_{i-1}, x) \\
-        &= \argmax_{y\in\sY^m} \sum_{i=1}^m \underbrace{{\color{blue}s(y_i,y_{i-1})}}_{\text{local score}} \;,
+        &= \argmax_{y\in\sY^m} \sum_{i=1}^m \underbrace{{\color{blue}s(y_i,y_{i-1})}}_{\textstyle\text{local score}} \;,
     \end{align*}
     where $s(y_i,y_{i-1}) = \theta\cdot\phi(x,i,y_i,y_{i-1})$.
+    \pdfnote{
+        Now, if we don't have the previous label, each label prediction contributes to the total score independently, so we can find the argmax for each yi separately.
+    }
 
     \begin{itemize}
-        \item Bruteforce: exact, $O(|\sY|^m)$
-        \item Greedy: inexact, $O(m)$
+        \item Bruteforce: exact, compute scores of all sequences, $O(|\sY|^m)$
+        \item Greedy: inexact, predict $y_i$ sequentially, $O(m)$
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     {Viterbi decoding}
     %Dynamic programming:
-    \vspace{-1em}
+    \vspace{-2em}
     \begin{align*}
         & \max_{y\in\sY^m} \sum_{i=1}^m s(y_i,y_{i-1}) \\
-        = & \max_{y\in\sY^m} \p{ \sum_{i=1}^{m-1}s(y_i, y_{i-1}) + s(y_m, y_{m-1}) } \\
+        = &\max_{y\in\sY^m} \p{ \sum_{i=1}^{m-1}s(y_i, y_{i-1}) + s(y_m, y_{m-1}) } \\
         = &\max_{{\color{blue}y_m}\in\sY} \max_{y\in\sY^{m-1}}
             \p{ \sum_{i=1}^{m-1}s(y_i, y_{i-1}) + s({\color{blue}y_m}, y_{m-1}) } \\
         = &\max_{{\color{blue}y_m}\in\sY} \max_{{\color{red}t}\in\sY} \max_{y\in\sY^{m-1},{\color{red}y_{m-1}=t}}
@@ -220,15 +303,49 @@
         = & \max_{{\color{blue}y_m}\in\sY} \underbrace{
             \max_{{\color{red}t}\in\sY}
         \p{ s({\color{blue}y_m}, {\color{red}t}) + \pi[m-1, {\color{red}t}] 
-        }}_{\pi[m, y_m]}
+        }}_{\textstyle\pi[m, y_m]}
     \end{align*}
+    \pdfnote{
+        Problem: local scores are all coupled.
+        Key idea: use dynamic programming.
+    }
+    \pdfnote{
+        Goal: find a subproblem: if we solve a size m-1 problem, then solving the size m problem is easy.
+        First separate the last step.
+    }
+    \pdfnote{
+        Two terms are still coupled because of y m-1.
+    }
+    \pdfnote{
+        Rewrite the m-1 size problem to two steps.
+        Consider all sequences of length m-1 that ends at t,
+        find the maximum score,
+        then maximize the score over the last token.
+        The point here is to decouple the two terms.
+    }
+    \pdfnote{
+        Now, the last term only depends on ym and t, so we can take it out of the inner most max.
+    }
+    \pdfnote{
+        pi: maximum score of length m-1 sequence ending at t.
+    }
 \end{frame}
 
 \begin{frame}
     {Viterbi decoding}
-    \emph{DP}: $\pi[j, t] = \max_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
+    \beamerblue{DP}: $\pi[j, t] = \max_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
+    \pdfnote{
+        Fill in the table pi.
+        In the figure, we construct this lattice for the sequence,
+        and each node would save the max score of all incoming paths.
+    }
+    \pdfnote{This gives us the max score. How do we get the actual prediction, i.e. argmax.}
 
-    \emph{Backtracking}: $p[j, t] = \argmax_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
+    \beamerblue{Backtracking}: $p[j, t] = \argmax_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
+    \pdfnote{
+        Break ties randomly.
+        There may be multiple sequences with the same score.
+    }
 
     \vspace{2em}
 
@@ -278,12 +395,12 @@
     Time complexity?
 \end{frame}
 
-\begin{frame}
-    {Viterbi decoding on the graph}
-    \emph{DP}: $\pi[j, t] = \max_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
-
-    \vspace{12em}
-\end{frame}
+%\begin{frame}
+%    {Viterbi decoding on the graph}
+%    \emph{DP}: $\pi[j, t] = \max_{t'\in\sY} \pi[j-1, t'] + s(y_j=t, y_{j-1}=t')$
+%
+%    \vspace{12em}
+%\end{frame}
 
 \begin{frame}
     {Summary}
@@ -303,7 +420,7 @@
 
 \begin{frame}
     {Structured prediction}
-    \emph{Task}: given $x=(x_1,\ldots,x_m) \in \sX^m$, predict
+    \beamerblue{Task}: given $x=(x_1,\ldots,x_m) \in \sX^m$, predict
     $y=(y_1,\ldots,y_m) \in \sY^m$.
 
     \begin{itemize}
@@ -315,7 +432,16 @@
     General idea:\\
     \begin{itemize}
         \item $h(x,y) = f(\theta\cdot\Phi(x,y))$
+            \pdfnote{
+                Conceptually, this is still multiclass classification except that the number of classes is exponential in the input size.
+                So the bruteforce solution is not feasible.
+            }
         \item $\Phi$ should be decomposable so that inference is tractable
+            \pdfnote{
+                As we have seen just now with MEMM, at inference time we want to maximize the total score of the sequence.
+                There we have sum of scores of every two consecutive words.
+                In general, it's easier if the sequence score can be decomposed to local scores. 
+            }
         \item Loss functions: structured hinge loss, negative log-likelihood etc.
         \item Inference: viterbi, interger linear programming (ILP) 
     \end{itemize}
@@ -326,11 +452,25 @@
     Graphical model:\\
     \begin{itemize}
         \item A joint distribution of a set of random variables
-        \item Learn the distribution from data
+        \item A graph represents conditional independence structure among random variables
+            \begin{itemize}
+                \item Nodes: random variables
+                \item Edges: dependency relations
+            \end{itemize}
+        \item Learning: estimate parameters of the distribution from data
         \item Inference: compute conditional/marginal distributions
     \end{itemize}
 
-    Example of a directed graphical model (aka Bayes nets):\\
+\end{frame}
+
+\begin{frame}
+    {Directed graphical model}
+    Directed graphical model (aka Bayes nets):\\
+    \begin{itemize}
+        \item Edges represent conditional dependencies
+    \end{itemize}
+
+    Example: MEMM\\
     \vspace{8em}
 
 \end{frame}
@@ -340,6 +480,9 @@
     Undirected graphical model (aka Markov random field):\\
     \begin{itemize}
         \item More natural for relational or spatial data 
+            \pdfnote{
+                where we know there's some dependence between the variables, but we don't necessarily want to assume one is conditioned on the other.
+            }
     \end{itemize}
 
     \textbf{Conditional random field}:\\
@@ -350,8 +493,9 @@
             p(y\mid x; \theta) = \frac{1}{Z(x, \theta)}\prod_{c\in\sC}\psi_c(y_c\mid x; \theta)
             $$
             \begin{itemize}
-                \item $Z(x,\theta)$: partition function (normalizer)
+                \item Clique $\sC$: a subset of nodes/variables that form a complete graph
                 \item $\psi_c$: non-negative clique potential functions, also called factors 
+                \item $Z(x,\theta)$: partition function (normalizer)
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -386,12 +530,16 @@
     \end{align*}
     Log-linear model with decomposable global feature function:
     \begin{align*}
-        \Phi(x,y) &= \sum_{i=1}^m \phi(x,i,y_i,y_{i-1})\\
+        \Phi(x,y) &\eqdef \sum_{i=1}^m \phi(x,i,y_i,y_{i-1})\\
         p(y\mid x; \theta) &= \frac{\exp\p{ \sum_{i=1}^m \theta\cdot\phi(x,i,y_i,y_{i-1}) }}
         {\sum_{y'\in\sY^m}  \exp\p{ \sum_{i=1}^m \theta\cdot\phi(x,i,y'_i,y'_{i-1}) }}\\
         &= \frac{\exp\p{ \theta\cdot\Phi(x,y) }}
         {\sum_{y'\in\sY^m}  \exp\p{ \theta\cdot\Phi(x,y) }}
     \end{align*}
+    \pdfnote{By linearity, we can push the sum inside the dot product.}
+    \pdfnote{
+        This now looks very similar to our multiclass classification model, but the challenge is to compute the normalizer.
+    }
 \end{frame}
 
 \begin{frame}
@@ -407,32 +555,59 @@
         \item Use back-propogation (autodiff) (equivalent to the forward-backward algorithm).
         \item Main challenge: compute the partition function. 
     \end{itemize}
+    \pdfnote{
+        The old way is to compute the gradient using the forward-backward algorithm,
+        but now we can just use backpropogation, which automatically does DP on graph for us.
+        But we still need to implement the forward pass (i.e. compute the normalizer).
+    }
 \end{frame}
 
 \begin{frame}
-    {Compute the partition function}
+    %{Compute the partition function}
+    {}
     \vspace{-1.5em}
     \begin{align*}
         & \log\sum_{y\in\sY^m} \exp\p{ \sum_{i=1}^m s(y_i,y_{i-1}) } \\
-        &= \log\sum_{y\in\sY^m} \p{ \exp\p{ \sum_{i=1}^{m-1} s(y_i,y_{i-1}) }\exp\p{s(y_m,y_{m-1})}  } \\
+        &= \log\sum_{y\in\sY^m} \p{ \exp\p{ \sum_{i=1}^{m-1} s(y_i,y_{i-1}) + s(y_m,y_{m-1})}  } \\
         &= \log\sum_{{\color{blue}y_m}\in\sY}\sum_{{\color{red}t}\in\sY}\sum_{y\in\sY^{m-1},{\color{red}y_{m-1}=t}}
-           \exp\p{ \sum_{i=1}^{m-1} s(y_i,y_{i-1}) }
-           \exp\p{s({\color{blue}y_m},{\color{red}y_{m-1}=t})}  \\
+           \exp\p{ \sum_{i=1}^{m-1} s(y_i,y_{i-1}) 
+                 +s({\color{blue}y_m},{\color{red}y_{m-1}=t})}  \\
         &= \log\sum_{{\color{blue}y_m}\in\sY}\sum_{{\color{red}t}\in\sY}
         \exp\p{s({\color{blue}y_m},{\color{red}y_{m-1}=t})}
         \sum_{y\in\sY^{m-1},{\color{red}y_{m-1}=t}}
         \exp\p{ \sum_{i=1}^{m-1} s(y_i,y_{i-1}) } \\
         &= \log\sum_{{\color{blue}y_m}\in\sY}\sum_{{\color{red}t}\in\sY}
         \exp\p{s({\color{blue}y_m},{\color{red}y_{m-1}=t})}
-        \exp\p{\pi[m-1,y_m]}\\
+        \exp\p{\pi[m-1,\mred{t}]}\\
         &= \log\sum_{{\color{blue}y_m}\in\sY}
         \underbrace{
         \sum_{{\color{red}t}\in\sY}
         \exp\p{s({\color{blue}y_m},{\color{red}y_{m-1}=t})
-        + \p{\pi[m-1,y_m]}
+        + \pi[m-1,\mred{t}]
         }
-    }_{\exp\p{\pi[m,y_m]}}
+    }_{\textstyle\exp\p{\pi[m,y_m]}}
     \end{align*}
+    \pdfnote{
+        Note that what we want to compute is quite similar to what we have when deriving viterbi decoding.
+        If you replace logsumexp with max, then it's the same problem.
+        And we will indeed follow a similar path.
+    }
+\end{frame}
+
+\begin{frame}
+    {Compute the partition function}
+    \begin{align*}
+        \exp(\pi[j, t]) &\eqdef \sum_{y\in\sY^{j}, y_j=t} \exp\p{\sum_{i=1}^j s(y_i, y_{i-1})} \\
+        \pi[j, t] &\eqdef \log \sum_{y\in\sY^{j}, y_j=t} \exp\p{\sum_{i=1}^j s(y_i, y_{i-1})} \\
+        \pi[j, t]  &= \log\sum_{t'\in\sY}\exp\p{s(y_j=t,y_{j-1}=t') + \pi[j-1,t']}
+    \end{align*}
+    \pdfnote{
+        If logsumexp is just sum, this is trivial.
+    }
+\end{frame}
+
+\begin{frame}
+    {Compute the partition function}
 \end{frame}
 
 \begin{frame}
@@ -459,14 +634,14 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    {Forward algorithm on the graph}
-    \emph{DP}:
-    \begin{align*}
-        \pi[j,t] &= \log\sum_{t'\in\sY}\exp\p{ s(y_j=t,y_{j-1}=t') + \pi[j-1,t'] }
-    \end{align*}
-    \vspace{8em}
-\end{frame}
+%\begin{frame}
+%    {Forward algorithm on the graph}
+%    \emph{DP}:
+%    \begin{align*}
+%        \pi[j,t] &= \log\sum_{t'\in\sY}\exp\p{ s(y_j=t,y_{j-1}=t') + \pi[j-1,t'] }
+%    \end{align*}
+%    \vspace{8em}
+%\end{frame}
 
 \begin{frame}
     {Learning}
@@ -483,13 +658,14 @@
     \sum_{(x,y)\in\sD}\Phi_k(x,y) = \sum_{(x,y)\in\sD}\BE_{y\sim p_\theta}\pb{\Phi_k(x,y)}
     $$
     Interpretation: Observed counts of feature $k$ equals expected counts of feature $k$.
+    \pdfnote{give a feature example}
 \end{frame}
 
 \begin{frame}
     {Inference}
     \begin{align*}
     & \argmax_{y\in\sY^m} \log p(y\mid x; \theta) \\
-    &=\argmax_{y\in\sY^m} \log \exp \p{ \theta\cdot \Phi(x,y) }\\
+        &=\argmax_{y\in\sY^m} \log \exp \p{ \theta\cdot \Phi(x,y) } \color{gray}{-\log Z(\theta)}\\
     &=\argmax_{y\in\sY^m} \sum_{i=1}^m s(y_i,y_{i-1})
     \end{align*}
     \begin{itemize}
@@ -527,6 +703,7 @@
         \includegraphics[height=3cm]{figures/rnn}
     \end{figure}
     What is the problem?
+    \pdfnote{Only has left context.}
 \end{frame}
 
 \begin{frame}
@@ -539,6 +716,7 @@
         \item Concatenated hidden states: $h_i=[\overrightarrow{h}_{1:m};                     \overleftarrow{h}_{1:m}]$
         \item Optional: use $y_{i-1}$ as inputs: $\overrightarrow{h}'_i=[\overrightarrow{h}_i; \underbrace{W_{yh}y_{i-1}}_{\text{label embedding}}]$
     \end{itemize}
+    \pdfnote{This is the neural version of MEMM}
 \end{frame}
 
 \begin{frame}
@@ -572,6 +750,7 @@
     \begin{itemize}
         \item Conditions on gold $y_{1:i-1}$ during training but predicted $\hat{y}_{1:i-1}$ during test
         \item Solution: search-aware training
+            \pdfnote{Consider possible search errors during decoding. Only relevant when using inexact search.}
     \end{itemize}
 
     \emph{Label bias}: a model problem\\

@@ -3,7 +3,8 @@
 **Note**: Future schedule is subject to minor change.
 
 #### Assignments
-- Assignment 1: Representing and classifying text [hw1.tgz](assignments/hw1.tgz)[hw1.pdf](assignments/hw1.pdf) (Due on Sep 29)
+- Assignment 1: Representing and classifying text [hw1.tgz](assignments/hw1.tgz) [hw1.pdf](assignments/hw1.pdf) (Due on Sep 29)
+- Assignment 2: Predicting sequences [hw2.tgz](assignments/hw2.tgz) [hw2.pdf](assignments/hw2.pdf) (Due on Oct 13)
 
 #### Introduction
 
@@ -20,9 +21,10 @@
 #### Predicting sequences
 
 - Week 4 (Sep 29). **Language models**: n-gram LM, neural LM, perplexity
-    - [notes](notes/language_models.html)
+    - [slides](slides/lec04/main.pdf) [board](slides/lec04/board.pdf) [recording](https://nyu.zoom.us/rec/share/rv6x6Z8XlBCIZwvyabCEKR6MjjO3vUvdGdMQkScu3P_tARK87NbNoCUcziC6KaQE.MaqZ-a1G6D5_XPnZ) [notes](notes/language_models.html)
 - Week 5 (Oct 6). **Sequence labeling**: log-linear models, decoding, POS tagging
-    - [notes](notes/sequence_labeling.html)
+    - [slides](slides/lec05/main-annotated.pdf) [recording](https://nyu.zoom.us/rec/share/yGTpEtxkNk8vzGLJXUPDWS4zppDlnJ8WqnlwLvcrHlltE4XsM2xN_3MGgcdsbhn5.mBnY-Yw2wmoZVpBW 
+) [notes](notes/sequence_labeling.html)
 - Week 6 (Oct 13). **Hidden Markov models**: HMM, EM
     - [J&M HMM](https://web.stanford.edu/~jurafsky/slp3/A.pdf), [Collins EM](http://www.cs.columbia.edu/~mcollins/em.pdf)
 - Week 7 (Oct 20). Midterm.
