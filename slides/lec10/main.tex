@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,11 +8,16 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{tcolorbox}
-\usepackage{subcaption}
-
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+%\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+\newcommand{\pdfnote}[1]{}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -35,32 +40,17 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{November 17, 2021}
 
 \begin{document}
 \begin{frame}
 \titlepage
 \end{frame}
 
-\begin{frame}
-    {Attention in encoder-decoder models}
-    Loose ends from last lecture:
-    \begin{figure}
-        \includegraphics[height=4cm]{figures/s2s-attention}
-    \end{figure}
-    \vspace{-1em}
-    \begin{enumerate}
-        \item Concatenate current attention output with the decoder hidden state: 
-            $y_i = f(y_{i-1}, [h_i; {\color{blue}c_i}])$
-        \item Concatenate previous attention output with the decoder input: 
-            $y_i = f(y_{i-1}, [y_{i-1}; {\color{blue}c_{i-1}}])$
-    \end{enumerate}
-\end{frame}
-
-\section{Notable neural architectures in NLP}
+\section{Transformers}
 
 \begin{frame}
-    {BiLSTM}
+    {Recap: BiLSTM}
     \begin{figure}
         \includegraphics[height=4cm]{figures/bilstm}
     \end{figure}
@@ -73,20 +63,18 @@
 
 \begin{frame}
     {Tasks with two inputs}
-    \header{Natural language inference}\\
+    \beamerblue{Natural language inference}\\
     \begin{itemize}
         \item[] Premise: 8 million in relief in the form of emergency housing.
         \item[] Hypothesis: The 8 million dollars for emergency housing was still not enough to solve the problem. 
         \item[] Label: neutral
     \end{itemize}
 
-    \header{Reading comprehension}\\
+    \beamerblue{Reading comprehension}\\
     \begin{itemize}
         \item[] 
-    \begin{tcolorbox}
         {\small
         Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion \emph{Denver Broncos} defeated the National Football Conference (NFC) champion Carolina Panthers 24--10 to earn their third Super Bowl title. The game was played on February 7, 2016, at Levi's Stadium in the San Francisco Bay Area at Santa Clara, California.}
-    \end{tcolorbox}
 \item[] Question: Which team won Super Bowl 50?
 \item[] Answer: Denver Broncos 
     \end{itemize}
@@ -94,26 +82,27 @@
 
 \begin{frame}
     {Encode two inputs}
-    \header{Goal}: $\sX \times \sX \rightarrow \sY$
+    \beamerblue{Goal}: $\sX \times \sX \rightarrow \sY$
 
     Simple combination:\\
     \begin{itemize}
         \item Encode $x_1$ and $x_2$ in $\BR^d$ separately
         \item Aggregate the two embeddings, e.g. $\text{MLP}(\text{pooling}(\text{enc}(x_1), \text{enc}(x_2)))$
         \item Pooling: concatenation, elementwise max, elementwise product etc.
+        \item \green{Modular}, but \red{less expressive}
     \end{itemize}
 
     Finer-grained interaction between the two inputs:\\
     \begin{itemize}
         \item Can we use something similar to the attention mechanism in seq2seq?
     \end{itemize}
-            \vspace{6em}
+            \vspace{7em}
 \end{frame}
 
 \begin{frame}
     {BiDAF}
     Bi-Directional Attention Flow for Machine Comprehension [Seo+ 2017]\\
-    \header{Key idea}: representation of $x_1$ depends on $x_2$ and vice versa
+    \beamerblue{Key idea}: representation of $x_1$ depends on $x_2$ and vice versa
     \vspace{-1em}
     \begin{figure}
         \includegraphics[height=7cm]{figures/bidaf}
@@ -121,38 +110,56 @@
 \end{frame}
 
 \begin{frame}
-    {Attention is all you need?}
-    \header{Word embedding}: representation of word meaning
+    {Improve the efficiency of RNNs}
+    \beamerblue{Word embedding}: represents the meaning of a word 
 
-    \header{Recurrent neural networks}: incorporate variable-length context
+    \beamerblue{Recurrent neural networks}: captures dependence among words in a sentence 
 
-    \header{Attention mechanism}: better modeling of long-range context
+    \beamerblue{Attention mechanism}: better modeling of long-range dependence 
 
     Multi-layer biLSTM with various attentions was the go-to architecture for most NLP tasks.
 
-    \textcolor{red}{But}: RNNs are sequential and hard to scale\\
+    {But}, RNNs are \red{sequential} and difficult to scale up\\
     \begin{itemize}
         \item[] We want deeper models trained with larger data.
     \end{itemize}
 
-    Can we get rid of the recurrence and use only attention to access context?
+    Can we handle dependencies in a more \green{efficient} way?
+\end{frame}
+
+\begin{frame}
+    {Attention is all you need?}
+    Key idea: get rid of recurrence and only rely on attention
+    \begin{figure}
+        \includegraphics[height=5cm]{figures/rnn-vs-attn}
+    \end{figure}
 \end{frame}
 
 \begin{frame}
     {Transformer overview}
     Attention is all you need. [Vaswani+ 2017]
 
-    Replaces recurrence with:\\
-    \begin{itemize}
-        \item \header{Self-attention}: an attention memory of the input sequence for each token in the input sequence (parallelizable)
-        \item \header{Position embedding}: models sequential information (doesn't lose word order)
-    \end{itemize}
+    Replaces recurrence with self-attention:\\
+    \begin{figure}
+        \includegraphics[width=\textwidth]{figures/transformer-high-level}
+    \end{figure}
+    %\begin{itemize}
+    %    \item \beamerblue{Self-attention}: an attention memory of the input sequence for each token in the input sequence (parallelizable)
+    %    \item \beamerblue{Position embedding}: models sequential information (doesn't lose word order)
+    %\end{itemize}
 
-    Other key components:\\
-    \begin{itemize}
-        \item Multi-head attention
-        \item Residual connection and layer norm: improves optimization of deep models
-    \end{itemize}
+    %Other key components:\\
+    %\begin{itemize}
+    %    \item Multi-head attention
+    %    \item Residual connection and layer norm: improves optimization of deep models
+    %\end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Transformer block}
+    \begin{figure}
+        \includegraphics[width=\textwidth]{figures/transformer-block}
+    \end{figure}
 \end{frame}
 
 \begin{frame}
@@ -166,8 +173,14 @@
         \end{subfigure}
     \end{figure}
     \begin{itemize}
-        \item Same attention memory ($K, V$) for all words (parallelizable)
-        \item Each word (as a query) interacts with all words in the input
+        \item Seq2seq attention: keys and values are the input words, and queries are the output (prefix).
+        \item Self-attention: keys, values, and queries are all from the input words.
+            \begin{itemize}
+                \item Input: a sequence of words
+                \item Output: (contextualized) embeddings for each word
+            \end{itemize}
+        \item Each word (as a query) interacts with all words (keys/values) in the input
+        \item Computation of the attention output for each word can be parallelized
     \end{itemize}
 \end{frame}
 
@@ -183,11 +196,11 @@
     {Scaled dot-product attention}
     \textbf{Scaled dot-product attention}
     $$
-     \alpha(q, k) = q \cdot k / \sqrt{d_k} 
+     \alpha(q, k) = q \cdot k / \sqrt{d} 
     $$
     \vspace{-3em}
     \begin{itemize}
-        \item $\sqrt{d_k}$: dimension of the key vector
+        \item $\sqrt{d}$: dimension of the key vector
         \item Avoids large attention weights that push the softmax function into regions of small gradients
     \end{itemize}
     \vspace{-1em}
@@ -202,9 +215,40 @@
 \end{frame}
 
 \begin{frame}
+    {Multi-head attention: motivation}
+    \begin{center}
+        \textit{Time flies like an arrow}
+    \end{center}
+    \begin{itemize}
+        \item Each word attends to all other words in the sentence
+        \item Which words should ``like'' attend to?
+            \begin{itemize}
+                \item Syntax: ``flies'', ``arrow'' (a preposition)
+                \item Semantics: ``time'', ``arrow'' (a metaphor)
+            \end{itemize}
+        \item We want to represent different roles of a word in the sentence: need more than a single embedding
+        \item Instantiation: multiple self-attention modules
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
     {Multi-head attention}
     \begin{figure}
         \includegraphics[width=.9\textwidth]{figures/multi-head}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    {Time complexity}
+    \begin{figure}
+        \includegraphics[width=\textwidth]{figures/multihead-time}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    {Efficient self-attention}
+    \begin{figure}
+        \includegraphics[width=\textwidth]{figures/efficient}
     \end{figure}
 \end{frame}
 
@@ -225,16 +269,30 @@
     \end{itemize}
 \end{frame}
 
+%\begin{frame}
+%    {Sinusoidal position embedding}
+%    \begin{itemize}
+%        \item Same dimension as word embeddings
+%        \item Two components ($2i, 2i+1$) represent a rotation vector: $\sin(\omega_{2i}t), \cos(\omega_{2i}t)$ ($t$ is the position)
+%        \item Multiple rotation vectors with different angular velocities: $\omega_{2i}$
+%        \item Analogous to binary encoding
+%    \end{itemize}
+%    \begin{figure}
+%        \includegraphics[height=3cm]{figures/sinusoidal}
+%    \end{figure}
+%\end{frame}
+
 \begin{frame}
     {Sinusoidal position embedding}
-    \begin{itemize}
-        \item Same dimension as word embeddings
-        \item Two components ($2i, 2i+1$) represent a rotation vector: $\sin(\omega_{2i}t), \cos(\omega_{2i}t)$ ($t$ is the position)
-        \item Multiple rotation vectors with different angular velocities: $\omega_{2i}$
-        \item Analogous to binary encoding
-    \end{itemize}
     \begin{figure}
-        \includegraphics[height=3cm]{figures/sinusoidal}
+        \includegraphics[width=\textwidth]{figures/sinusoidal}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    {How important is word ordering?}
+    \begin{figure}
+        \includegraphics[width=\textwidth]{figures/permute}
     \end{figure}
 \end{frame}
 
@@ -252,41 +310,57 @@
 \end{frame}
 
 \begin{frame}
-    {Transformer as an encoder-decoder model}
-    \begin{columns}
-        \begin{column}{.4\textwidth}
+    {Connect the decoder}
     \begin{figure}
-        \includegraphics[height=7cm]{figures/transformer}
+        \includegraphics[width=\textwidth]{figures/decoder}
     \end{figure}
-        \end{column}
-        \begin{column}{.6\textwidth}
-            \begin{itemize}
-                \item Stacked transformer block
-                \item Decoder attention:
-                    \begin{itemize}
+    \begin{itemize}
                         \item Autoregressive generation
-                        \item Self-attention over prefix
-                        \item Encoder-decoder attention over inputs
-                    \end{itemize}
+                        \item Self-attention over prefix, encoder-decoder attention over inputs
                 \item Output at each position:
                     $$
                     p(y_t\mid x, y_{1:t-1})
                     $$
                 \item MLE training
-            \end{itemize}
-        \end{column}
-    \end{columns}
+    \end{itemize}
 \end{frame}
 
+%\begin{frame}
+%    {Transformer as an encoder-decoder model}
+%    \begin{columns}
+%        \begin{column}{.4\textwidth}
+%    \begin{figure}
+%        \includegraphics[height=7cm]{figures/transformer}
+%    \end{figure}
+%        \end{column}
+%        \begin{column}{.6\textwidth}
+%            \begin{itemize}
+%                \item Stacked transformer block
+%                \item Decoder attention:
+%                    \begin{itemize}
+%                        \item Autoregressive generation
+%                        \item Self-attention over prefix
+%                        \item Encoder-decoder attention over inputs
+%                    \end{itemize}
+%                \item Output at each position:
+%                    $$
+%                    p(y_t\mid x, y_{1:t-1})
+%                    $$
+%                \item MLE training
+%            \end{itemize}
+%        \end{column}
+%    \end{columns}
+%\end{frame}
+
 \begin{frame}
-    {Impact in NLP}
+    {Impact on NLP}
     \begin{itemize}
         \item Initially designed for sequential data and obtained SOTA results on MT
         \item Replaced recurrent models (e.g. LSTM) on many tasks
         \item Enabled large-scale training which led to pre-trained models such as BERT and GPT-2
     \end{itemize}
 
-    Minor limitation: fixed length input. (see Longformer, Performer etc.)
+    Limitation: fixed length input (see Longformer, Performer etc.)
 \end{frame}
 
 \section{Pre-trained models}
@@ -295,7 +369,7 @@
     {Representation learning}
     What are good representations?\\
     \begin{itemize}
-        \item[] Allow for easy extraction of information useful to a learning task
+        \item[] Contains good features for downstream tasks 
     \end{itemize}
     Example:
     \vspace{-1em}
@@ -317,21 +391,20 @@
     Applications of good representations:\\
     \begin{itemize}
         \item Learning with small data: fine-tuning on learned representations
-        \item Multi-task and transfer learning: shared factors across tasks
-        \item Domain adaptation: more abstract features are less sensitive to domain-specific variations
-        \item Clustering
+        \item Multi-task and transfer learning: one representation used for many tasks 
+        \item Metric learning: get a similarity metric for free 
     \end{itemize}
 
-    What should be the objective of representation learning (unsupervised)?\\
+    How do we learn the representations?
     \begin{itemize}
         \item Self-supervised learning: obtain representations through generative modeling
-        \item Auto-encoders: directy learn the mapping from input to a (latent) representation
+        %\item Auto-encoders: directy learn the mapping from input to a (latent) representation
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     {Self-supervised learning}
-    \header{Key idea}: predict parts of the input from the other parts
+    \beamerblue{Key idea}: predict parts of the input from the other parts
     \vspace{-2em}
     \begin{figure}
         \includegraphics[height=5cm]{figures/image-self}
@@ -508,9 +581,9 @@
 \begin{frame}
     {BERT fine-tuning}
     All weights are fine-tuned (with a small learning rate)
-    \vspace{-1em}
+    \vspace{-1.5em}
     \begin{figure}
-            \includegraphics[width=.8\textwidth]{figures/bert-finetuning}
+            \includegraphics[height=0.9\textheight]{figures/bert-finetuning}
     \end{figure}
 \end{frame}
 
@@ -524,6 +597,18 @@
 \end{frame}
 
 \begin{frame}
+    {The new pre-train then fine-tune paradigm}
+    \begin{figure}
+            \includegraphics[width=.9\textwidth]{figures/homogenization}
+            \caption{[Bommasani et al., 2021]}
+    \end{figure}
+    \begin{itemize}
+\item \emph{One model} to absorb large amounts of raw data from various domains and modalities
+\item Then \emph{adapted} to different downstream tasks
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
     {Summary}
     Off-the-shelf solution for NLP tasks: fine-tune BERT (and friends)
 
@@ -532,170 +617,221 @@
         \item Processing long text
         \item Efficient training/inference
         \item Learning with a small amount of data
-        \item Generalize to new test distributions (solve tasks, not datasets)
+        \item Robustness to distribution shifts
     \end{itemize}
 \end{frame}
 
-\section{Autoencoders and VAEs}
-
+\section{Scaling up pre-trained models}
 \begin{frame}
-    {Overview}
-    \header{Motivation}: Directly learn a (parametric) mapping from the input to the representation
+    {In-context learning}
+    GPT-3 by OpenAI: Transformer-based LM with 175B parameters
 
-    \header{Encoder}: dimensionality reduction (data to code)
-    $$z = \text{enc}_\theta(x)$$
-
-    \header{Decoder}: reconstruction (code to data)
-    $$x = \text{dec}_\gamma(\text{enc}_\theta(x)) $$
-
-    \header{Learning}: reconstruction loss
-    $$
-    J(\theta, \gamma) = \frac{1}{|\sD|}\sum_{x\in\sD} L(x, \text{dec}_\gamma(\text{enc}_\theta(x)))
-    $$
-    \vspace{-1em}
-    $L$: MSE, cross-entropy etc.
-\end{frame}
-
-\begin{frame}
-    {Autoencoder}
-    \vspace{6em}
-    \begin{itemize}
-        \item Parametrize encoder and decoder by neural networks
-        \item What model can we use if $x$ is text?
-        \item \alert{Problem}: $z$ could just copy the input $x$ and no meaningful representation is learned!
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    {Denoise autoencoder}
-    \header{Intuition}: structural information is needed to recover a corrupted input
-
-    \header{Learning}: reconstruction clean input from a corrputed version
-    $$
-    J(\theta, \gamma) = \frac{1}{|\sD|}\sum_{x\in\sD} \BE_{\tilde{x}\sim p_c(\cdot\mid x)}\pb{L(x, \text{dec}_\gamma(\text{enc}_\theta(\tilde{x})))}
-    $$
-
-    \begin{itemize}
-        \item Corruption: delete/insert/substitute words, Gaussian noise for images
-        \item Which model we have seen can be considered as a denoise autoencoder? 
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    {Variational autoencoder}
-    Model $z$ as a latent variable: $$p(x;\theta) = \sum_{z\in\sZ} p(x, z;\theta)
-    \quad (\int_z p(x,z;\theta)dz \quad \text{if $z$ is continuous})
-    $$
-
-    Recall the evidence lowerbound (see lecture on EM)
-    \begin{align*}
-        \text{ELBO} &= \log p(x; \theta) - \KL{q(z)}{p(z\mid x;\theta)} \\
-        &= \sum_{z\in\sZ} q(z)\log \frac{p(x,z;\theta)}{q(z)}
-    \end{align*}
-
-    Concept check: What is $q(z)$ for EM?
-
-    In general, we can learn $q(z)$ for each sample:
-    $$
-    \max_\theta \sum_{x\in\sD} \max_\gamma \sum_{z\in\sZ} q(z;\gamma)\log \frac{p(x,z;\theta)}{q(z;\gamma)}
-    $$
-\end{frame}
-
-\begin{frame}
-    {Variational autoencoder}
-    Objective:
-    $$
-    \max_\theta \sum_{x\in\sD} \max_\gamma \sum_{z\in\sZ} q(z;\gamma)\log \frac{p(x,z;\theta)}{q(z;\gamma)}
-    $$
-    EM-style learning:\\
-    \begin{enumerate}
-        \item Solve $\gamma$ for each sample (using SGD):
-            $$\gamma^*_x \leftarrow \max_\gamma \text{ELBO}(x;\theta^{\text{old}}, \gamma)$$ 
-        \item One-step update $\theta^{\text{old}}$:
-            $$\theta^{\text{new}} \leftarrow \theta^{\text{old}} + \nabla_\theta\sum_{x\in\sD}\text{ELBO}(x;\theta, \gamma^*_x)$$
-    \end{enumerate}
-    Problems:\\
-    \begin{itemize}
-        \item Step 1 is expensive!
-        \item How to compute the gradient?
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    {Amortized variational inference}
-    \header{Problem}: finding the optimal variation distribution for each sample $x$ is expensive
-            $$\gamma^*_x \leftarrow \max_\gamma \text{ELBO}(x;\theta^{\text{old}}, \gamma)$$ 
-
-    \header{Idea}: learn the mapping $f_\phi\colon x \rightarrow \gamma^*_x$ 
-
-    Note that $f_\phi(x)$ specifies the distribution $q(z;\gamma_x)$.
-    Let's use $q(z\mid x;\phi)$ to denote $q_\gamma(z)$.
-
-    Estimate $\phi$ (same for all $x$)
-    \begin{align*}
-        & \max_\phi \sum_{x\in\sD}\text{ELBO}(x;\theta, \phi)\\
-        &= \max_\phi \sum_{x\in\sD} \BE_{q(z\mid x; \phi)} \pb{\log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}}
-    \end{align*}
-    Update $\phi$ and $\theta$ iteratively for each mini-batch.
-\end{frame}
-
-\begin{frame}
-    {Gradient computation}
-    Need to compute $\nabla_\phi \text{ELBO}(x;\phi,\theta)$ and $\nabla_\theta \text{ELBO}(x;\phi,\theta)$
-
-    Monte Carlo sampling (REINFORCE):
-    \begin{align*}
-    \nabla_\phi \BE_{q(z\mid x; \phi)} \pb{\log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}}
-        &= \BE_{q(z\mid x; \phi)} \pb{\nabla_\phi q(z\mid x; \phi)  \log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}} \\
-        &\approx \frac{1}{n}\sum_{i=1}^n \pb{\nabla_\phi q(z^{(i)}\mid x; \phi)  \log \frac{p(x,z^{(i)};\theta)}{q(z^{(i)}\mid x;\phi)}}
-    \end{align*}
-    where $z^{(i)}\sim q(z\mid x; \phi)$.
-
-    Problem: gradient estimator has \alert{high variance}.
-\end{frame}
-
-\begin{frame}
-    {Reparametrization trick}
-    \begin{figure} 
-        \includegraphics[width=.7\textwidth]{figures/reparam}
-    \end{figure}
-    \vspace{-1em}
-    Original distribution: $z^{(i)}\sim q(z\mid x; \phi)$\\
-    Auxiliary independent random variable: $\epsilon\sim p(\epsilon)$ \\
-    Reparametrization trick: $z = \sT(\epsilon, x; \phi)$
-\end{frame}
-
-\begin{frame}
-    {Parametrization by neural networks}
+    Zero-shot learning given task instruction / prompt:
     \begin{figure}
-        \includegraphics[width=.8\textwidth]{figures/vae}
+            \includegraphics[height=6cm]{figures/in-context-zero}
     \end{figure}
-    \vspace{-1em}
-    Joint distribution: $p(x,z;\theta) = p(x\mid z;\theta) p(z;\theta)$
-
-    Prior: $p(z;\theta) = \sN(z\mid 0, I)$
-
-    Likelihood: $p(x\mid z;\theta) = \text{dec}_\theta(z)$
-
-    Variational distribution: $q(z\mid x; \phi) = \text{enc}_\phi(x) = \mu_\phi(x), \sigma^2_\phi(x)$
-
-    Reparametrization:
-    \begin{align*}
-        \epsilon &\sim \sN(0, I) \\
-        z &= \mu_\phi(x) + \sigma^2_\phi(x)\cdot \epsilon
-    \end{align*}
 \end{frame}
 
 \begin{frame}
-    {Summary}
-    \begin{itemize}
-        \item Autoencoders: directly learn a low-dimensional representation through reconstruction
-        \item VAEs: impose structure on the latent representation
-            \begin{itemize}
-                \item In addition to representation learning, also used for latent variable models in NLP
-                \item Issues: posterior collapse, evaluation 
-            \end{itemize}
-    \end{itemize}
+    {In-context learning}
+    Few-shot learning with in-context examples (with no gradient update):
+    \begin{figure}
+            \includegraphics[height=6cm]{figures/in-context-few}
+    \end{figure}
 \end{frame}
+
+\begin{frame}
+    {In-context learning}
+    Larger models make increasingly efficient use of in-context information
+    \begin{figure}
+            \includegraphics[height=6cm]{figures/scaling}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    {In-context learning}
+    Pre-trained LMs can be adapted for multimodal learning too:
+    \begin{figure}
+            \includegraphics[height=5cm]{figures/in-context-multimodal}
+            \caption{Multimodal Few-Shot Learning with Frozen Language Models}
+    \end{figure}
+    \vspace{-1em}
+    Text embedder and self-attention use frozen weights from pre-trained LM.
+\end{frame}
+
+\begin{frame}
+    {Language modeling is all you need?}
+    Text-to-text framework:
+    \begin{figure}
+            \includegraphics[height=5cm]{figures/t5}
+            \caption{Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    {Discussion: what can go wrong?}
+\end{frame}
+
+%\section{Autoencoders and VAEs}
+%
+%\begin{frame}
+%    {Overview}
+%    \beamerblue{Motivation}: Directly learn a (parametric) mapping from the input to the representation
+%
+%    \beamerblue{Encoder}: dimensionality reduction (data to code)
+%    $$z = \text{enc}_\theta(x)$$
+%
+%    \beamerblue{Decoder}: reconstruction (code to data)
+%    $$x = \text{dec}_\gamma(\text{enc}_\theta(x)) $$
+%
+%    \beamerblue{Learning}: reconstruction loss
+%    $$
+%    J(\theta, \gamma) = \frac{1}{|\sD|}\sum_{x\in\sD} L(x, \text{dec}_\gamma(\text{enc}_\theta(x)))
+%    $$
+%    \vspace{-1em}
+%    $L$: MSE, cross-entropy etc.
+%\end{frame}
+%
+%\begin{frame}
+%    {Autoencoder}
+%    \vspace{6em}
+%    \begin{itemize}
+%        \item Parametrize encoder and decoder by neural networks
+%        \item What model can we use if $x$ is text?
+%        \item \alert{Problem}: $z$ could just copy the input $x$ and no meaningful representation is learned!
+%    \end{itemize}
+%\end{frame}
+%
+%\begin{frame}
+%    {Denoise autoencoder}
+%    \beamerblue{Intuition}: structural information is needed to recover a corrupted input
+%
+%    \beamerblue{Learning}: reconstruction clean input from a corrputed version
+%    $$
+%    J(\theta, \gamma) = \frac{1}{|\sD|}\sum_{x\in\sD} \BE_{\tilde{x}\sim p_c(\cdot\mid x)}\pb{L(x, \text{dec}_\gamma(\text{enc}_\theta(\tilde{x})))}
+%    $$
+%
+%    \begin{itemize}
+%        \item Corruption: delete/insert/substitute words, Gaussian noise for images
+%        \item Which model we have seen can be considered as a denoise autoencoder? 
+%    \end{itemize}
+%\end{frame}
+%
+%\begin{frame}
+%    {Variational autoencoder}
+%    Model $z$ as a latent variable: $$p(x;\theta) = \sum_{z\in\sZ} p(x, z;\theta)
+%    \quad (\int_z p(x,z;\theta)dz \quad \text{if $z$ is continuous})
+%    $$
+%
+%    Recall the evidence lowerbound (see lecture on EM)
+%    \begin{align*}
+%        \text{ELBO} &= \log p(x; \theta) - \KL{q(z)}{p(z\mid x;\theta)} \\
+%        &= \sum_{z\in\sZ} q(z)\log \frac{p(x,z;\theta)}{q(z)}
+%    \end{align*}
+%
+%    Concept check: What is $q(z)$ for EM?
+%
+%    In general, we can learn $q(z)$ for each sample:
+%    $$
+%    \max_\theta \sum_{x\in\sD} \max_\gamma \sum_{z\in\sZ} q(z;\gamma)\log \frac{p(x,z;\theta)}{q(z;\gamma)}
+%    $$
+%\end{frame}
+%
+%\begin{frame}
+%    {Variational autoencoder}
+%    Objective:
+%    $$
+%    \max_\theta \sum_{x\in\sD} \max_\gamma \sum_{z\in\sZ} q(z;\gamma)\log \frac{p(x,z;\theta)}{q(z;\gamma)}
+%    $$
+%    EM-style learning:\\
+%    \begin{enumerate}
+%        \item Solve $\gamma$ for each sample (using SGD):
+%            $$\gamma^*_x \leftarrow \max_\gamma \text{ELBO}(x;\theta^{\text{old}}, \gamma)$$ 
+%        \item One-step update $\theta^{\text{old}}$:
+%            $$\theta^{\text{new}} \leftarrow \theta^{\text{old}} + \nabla_\theta\sum_{x\in\sD}\text{ELBO}(x;\theta, \gamma^*_x)$$
+%    \end{enumerate}
+%    Problems:\\
+%    \begin{itemize}
+%        \item Step 1 is expensive!
+%        \item How to compute the gradient?
+%    \end{itemize}
+%\end{frame}
+%
+%\begin{frame}
+%    {Amortized variational inference}
+%    \beamerblue{Problem}: finding the optimal variation distribution for each sample $x$ is expensive
+%            $$\gamma^*_x \leftarrow \max_\gamma \text{ELBO}(x;\theta^{\text{old}}, \gamma)$$ 
+%
+%    \beamerblue{Idea}: learn the mapping $f_\phi\colon x \rightarrow \gamma^*_x$ 
+%
+%    Note that $f_\phi(x)$ specifies the distribution $q(z;\gamma_x)$.
+%    Let's use $q(z\mid x;\phi)$ to denote $q_\gamma(z)$.
+%
+%    Estimate $\phi$ (same for all $x$)
+%    \begin{align*}
+%        & \max_\phi \sum_{x\in\sD}\text{ELBO}(x;\theta, \phi)\\
+%        &= \max_\phi \sum_{x\in\sD} \BE_{q(z\mid x; \phi)} \pb{\log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}}
+%    \end{align*}
+%    Update $\phi$ and $\theta$ iteratively for each mini-batch.
+%\end{frame}
+%
+%\begin{frame}
+%    {Gradient computation}
+%    Need to compute $\nabla_\phi \text{ELBO}(x;\phi,\theta)$ and $\nabla_\theta \text{ELBO}(x;\phi,\theta)$
+%
+%    Monte Carlo sampling (REINFORCE):
+%    \begin{align*}
+%    \nabla_\phi \BE_{q(z\mid x; \phi)} \pb{\log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}}
+%        &= \BE_{q(z\mid x; \phi)} \pb{\nabla_\phi q(z\mid x; \phi)  \log \frac{p(x,z;\theta)}{q(z\mid x;\phi)}} \\
+%        &\approx \frac{1}{n}\sum_{i=1}^n \pb{\nabla_\phi q(z^{(i)}\mid x; \phi)  \log \frac{p(x,z^{(i)};\theta)}{q(z^{(i)}\mid x;\phi)}}
+%    \end{align*}
+%    where $z^{(i)}\sim q(z\mid x; \phi)$.
+%
+%    Problem: gradient estimator has \alert{high variance}.
+%\end{frame}
+%
+%\begin{frame}
+%    {Reparametrization trick}
+%    \begin{figure} 
+%        \includegraphics[width=.7\textwidth]{figures/reparam}
+%    \end{figure}
+%    \vspace{-1em}
+%    Original distribution: $z^{(i)}\sim q(z\mid x; \phi)$\\
+%    Auxiliary independent random variable: $\epsilon\sim p(\epsilon)$ \\
+%    Reparametrization trick: $z = \sT(\epsilon, x; \phi)$
+%\end{frame}
+%
+%\begin{frame}
+%    {Parametrization by neural networks}
+%    \begin{figure}
+%        \includegraphics[width=.8\textwidth]{figures/vae}
+%    \end{figure}
+%    \vspace{-1em}
+%    Joint distribution: $p(x,z;\theta) = p(x\mid z;\theta) p(z;\theta)$
+%
+%    Prior: $p(z;\theta) = \sN(z\mid 0, I)$
+%
+%    Likelihood: $p(x\mid z;\theta) = \text{dec}_\theta(z)$
+%
+%    Variational distribution: $q(z\mid x; \phi) = \text{enc}_\phi(x) = \mu_\phi(x), \sigma^2_\phi(x)$
+%
+%    Reparametrization:
+%    \begin{align*}
+%        \epsilon &\sim \sN(0, I) \\
+%        z &= \mu_\phi(x) + \sigma^2_\phi(x)\cdot \epsilon
+%    \end{align*}
+%\end{frame}
+%
+%\begin{frame}
+%    {Summary}
+%    \begin{itemize}
+%        \item Autoencoders: directly learn a low-dimensional representation through reconstruction
+%        \item VAEs: impose structure on the latent representation
+%            \begin{itemize}
+%                \item In addition to representation learning, also used for latent variable models in NLP
+%                \item Issues: posterior collapse, evaluation 
+%            \end{itemize}
+%    \end{itemize}
+%\end{frame}
 
 \end{document}

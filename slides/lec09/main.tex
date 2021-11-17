@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,8 +8,16 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+%\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+\newcommand{\pdfnote}[1]{}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -32,7 +40,7 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{November 10, 2021}
 
 \begin{document}
 \begin{frame}
@@ -42,12 +50,12 @@
 \begin{frame}
     {Logistics}
     \begin{itemize}
-        \item HW3: due on Wednseday
-        \item Guest lecture on 12/1
-            \begin{itemize}
-                \item Victorial Lin, senior research scientist from Salesforce
-                \item Natural language interface (semantic parsing, text to program etc.)
-            \end{itemize}
+        \item Tutorial on HW4 (constituent parsing) by Udit Arora (TBA)
+        \item Next three weeks: deep learning methods and applications 
+        \item Guest lecture on 12/1:\\
+            How far have we come in giving our NLU systems common sense? \\
+            \includegraphics[height=4cm]{figures/nasrin}
+        \item Project presentation on 12/8: 3 minutes + 1 minute Q\&A (10\%)
     \end{itemize}
 \end{frame}
 
@@ -61,6 +69,17 @@
     $$
     p(y\mid x) = \frac{p(y)p(x\mid y)}{\sum_y p(y)p(x\mid y)}
     $$
+    \pdfnote{
+        We consider the Foreign language x as the noised version of English y, which we will decode.
+        The probability of the unobserved true signal y (target English sentence) given the observed noisy signal (source Foreign sentence) is given by Bayes rule. Here p(y) is the prior over English sentences, which is given by a language model.
+        p(x | y) is the translation model, which is modeled by latent word alignments.
+    }
+    \pdfnote{
+        Question: how would you model p(x, a | y)?
+        Key idea: decomposition!
+        p(french word | aligned english word) x
+        p(french word position | english word position)
+    }
 
     Word alignment: $p(x\mid y) = \sum_a p(x,a\mid y)$
     
@@ -96,9 +115,12 @@
                 \item Extract and score phrase pairs from aligned examples
                 \item Learn the reordering model 
             \end{enumerate}
-        \item Learning a log-linear model by MLE given translation score, LM score, reordering score, and other features 
+        \item Learn a linear model to score hypothesis: features include translation score, LM score, reordering score etc.
     \end{enumerate}
-    What are the domain-specific knowledge used here?
+    Where do we use domain-specific knowledge?
+    \pdfnote{tokenization, feature engineering}
+    \pdfnote{Note that we do not explicitly use syntax knowledge, and they are simplified to learned phrase pairs and reordering probabilities, which is big progress from rule-based system in the 60's.
+    There are grammar based systems though, e.g. Hiero system from Chiang et al.}
 \end{frame}
 
 \begin{frame}
@@ -123,12 +145,25 @@
     {A simple implementation of seq2seq}
     \begin{figure}
         \includegraphics[height=2.5cm]{figures/s2s-ilya}
-        \caption{[Sutskever+ 2014]}
+        \caption{Sequence to Sequence Learning with Neural Networks [Sutskever+ 2014]}
     \end{figure}
     \begin{itemize}
         \item Encoder/decoder: uni-directional multi-layer LSTM
         \item Large improvement when the input sequence is reversed
-        \item Outperforms phrase-based MT systems 
+        \item Outperforms phrase-based MT systems: 34.8 vs 33.3 (on WMT'14 En-Fr) 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Seq2seq for constituent parsing}
+    \begin{figure}
+        \includegraphics[height=4cm]{figures/parsing-s2s}
+        \caption{Grammar as a Foreign Language [Vinyals+ 2015]}
+    \end{figure}
+    \begin{itemize}
+        \item Text to linearized parse trees (no binarization)
+        \item Seq2seq enhanced with attention mechanism (later)
+        \item Matches result from BerkelyParser 
     \end{itemize}
 \end{frame}
 
@@ -136,6 +171,9 @@
 
 \begin{frame}
     {Variants of RNN-based seq2seq architectures}
+    \begin{figure}
+        \includegraphics[height=2.5cm]{figures/s2s-ilya}
+    \end{figure}
     \begin{itemize}
         \item Basic recurrent unit: vanilla RNN, LSTM, GRU
         \item Number of layers
@@ -165,7 +203,7 @@
     {Decoder embedding sharing}
     Input layer: embed previous word $y_{i-1}$
     $$
-    y_{i-1} \mapsto {\color{blue}W_{\text{in}}}^T\phi_{\text{one-hot}}(y_{i-1})
+    y_{i-1} \mapsto {\color{blue}W_{\text{in}}}\phi_{\text{one-hot}}(y_{i-1})
     $$
 
     Output layer: distribution over the next word $y_i$
@@ -184,18 +222,18 @@
 \begin{frame}
     {Attention mechanism}
     Motivation: different target words may depend on different parts of the source input\\
-    Idea: allow decoder to have access to all encoder hidden states $h^{\text{end}}_i$.
+    %Idea: allow decoder to have access to all encoder hidden states $h^{\text{end}}_i$.
 
     \vspace{-1em}
     \begin{figure}
-        \includegraphics[height=3.5cm]{figures/attention}
+        \includegraphics[height=4cm]{figures/attention}
     \end{figure}
     \vspace{-1em}
    
     Attention is a pooling/aggregation mechanism:\\
     \begin{itemize}
         \item Encoder states: a memory of \emph{key-value} pairs $(k_1, v_1), \ldots, (k_n, v_n)$.
-        \item Decoder states: a \emph{query} to retrieve from the memory by matching against the \emph{keys}.
+        \item Decoder states: a \emph{query} to retrieve from the memory by matching the \emph{keys}.
         \item Output from the memory: a weighted combination of the \emph{values}.
     \end{itemize}
 \end{frame}
@@ -204,12 +242,12 @@
     {Attention mechanism}
     \vspace{-1em}
     \begin{figure}
-        \includegraphics[height=4cm]{figures/attention-2}
+        \includegraphics[height=4cm]{figures/qkv}
     \end{figure}
     \vspace{-1em}
 
     \begin{itemize}
-        \item Query matching: score $a_i = \alpha(q, k_i)$
+        \item How likely is $q$ matched to $k_i$: score $a_i = \alpha(q, k_i)$
         \item Normalize scores to get attention weights: $b_i = \text{softmax}(a)[i]$
         \item Output weight combination of values in the memory: $o_i = \sum_{i=1}^n b_i v_i$
         \item In matrix form: $\text{attention}(Q, K, V)$ (rows are corresponding vectors)
@@ -237,6 +275,7 @@
     \text{output} &= [\text{head}_1; \ldots; \text{head}_h]W^O
     \end{align*}
     Compute attention with $h$ \textcolor{blue}{linear projections} of $(Q, K, V)$.
+    \pdfnote{Different types of attention/similarity}
 \end{frame}
 
 \begin{frame}
@@ -244,8 +283,8 @@
     \begin{figure}
         \includegraphics[height=5cm]{figures/s2s-attention}
     \end{figure}
-    Without attention: $y_i = f(y_{i-1}, h_i)$\\
-    With attention: $y_i = f(y_{i-1}, h_i, {\color{blue}c_i})$
+    Without attention: $p(y_i \mid y_{<i}, x) \propto f(y_{i-1}, h_{i-1})$\\
+    With attention: $p(y_i \mid y_{<i}, x) \propto f(y_{i-1}, h_{i-1}, {\color{blue}c_{i-1}})$
 \end{frame}
 
 \begin{frame}
@@ -336,7 +375,7 @@
     MLE:
     \begin{align*}
         & \max_{\theta} \sum_{i=1}^N \log p(y^{(i)}\mid x^{(i)}; \theta) \\
-        &= \max_{\theta} \sum_{i=1}^N \sum_{t=1}^T \underbrace{p(y^{(i)}_t \mid x^{(i)}, y^{(i)}_{1:t-1}; \theta)}_{\text{decoder output}} \quad \text{\textcolor{brown}{auto-regressive model}}
+        &= \max_{\theta} \sum_{i=1}^N \sum_{t=1}^T \underbrace{\log p(y^{(i)}_t \mid x^{(i)}, y^{(i)}_{1:t-1}; \theta)}_{\text{decoder output}} \quad \text{\textcolor{brown}{auto-regressive model}}
     \end{align*}
 \end{frame}
 
@@ -444,18 +483,22 @@
 
 \begin{frame}
     {Applications}
-    \header{Text generation}: MT, summarization, chit-chat dialogue, image caption, story generation etc.
 
-    \header{Structured prediction}:
-    \vspace{-1em}
+    {Text generation}: MT, summarization, chit-chat dialogue, image caption, story generation etc.
+
+    {Structured prediction}:
+    \begin{itemize}
+        \item Parsing
     \begin{figure}
         \includegraphics[height=3cm]{figures/s2s-parsing}
     \end{figure}
-    \vspace{-1em}
-    \begin{itemize}
-        \item Close to SOTA on constituent parsing.
-        \item Need post-processing to guarantee well-formed trees.
+\item Text-to-SQL
     \end{itemize}
+    %\vspace{-1em}
+    %\begin{itemize}
+    %    \item Close to SOTA on constituent parsing.
+    %    \item Need post-processing to guarantee well-formed trees.
+    %\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -468,22 +511,23 @@
         \item[Candidate 2] It is to insure the troops forever hearing the activity guidebook that party direct.
     \end{description}
 
-    \header{Task}: given the reference(s) of each source sentence, evaluate the quality of the generated sequences.
+    {Task}: given the reference(s) of each source sentence, evaluate the quality of the generated sequences.
 
-    \header{Main idea}: good generations should have high overlap with the reference.
+    {Main idea}: good generations should have high overlap with the reference.
 \end{frame}
 
 \begin{frame}
     {BLEU: n-gram precision}
-    First try: n-gram precision
+    First try: n-gram precision ($x$: input, $c$: candidate, $r$: reference)
     $$
     p_n = \frac{
-        \sum_{(x,c,r)} \sum_{s\in\text{n-gram}(c)} \text{count}(s)\BI\pb{s \text{ in } r)}
+        \sum_{(x,c,r)} \sum_{s\in\text{n-gram}(c)} \BI\pb{s \text{ in } r}
     }
     {
-\sum_{(x,c,r)} \sum_{s\in\text{n-gram}(c)} \text{count}(s)
+\sum_{(x,c,r)} \sum_{s\in\text{n-gram}(c)} \BI\pb{s \text{ in } c}
     }
     $$
+    \pause
     Problem: matching only a few words in the reference(s)\\
     \begin{description}
         \item[Candidate] the the the the the the the
@@ -502,7 +546,7 @@
 
     Solution: geometric mean (when $w_n=1/n$)
     $$
-    \exp\p{\sum_{i=1}^n w_n p_n}
+    \exp\p{\sum_{i=1}^n w_n \log p_n}
     $$
 
     Problem with precision:\\
@@ -513,6 +557,9 @@
     \end{description}
 
     What are problems with recall with \textit{multiple} references?
+    \pdfnote{
+       BLEU does not use recall because the notion of recall is unclear when simultaneously matching against multiple reference translations (rather than a single reference).  
+    }
 \end{frame}
 
 \begin{frame}
@@ -524,9 +571,9 @@
         \item[length] ?
     \end{description}
 
-    \header{candidate length} $C=\sum_{(x,c,r)} \text{len}(c)$
+    {candidate length} $C=\sum_{(x,c,r)} \text{len}(c)$
 
-    \header{reference length} $R=\sum_{(x,c,r)} \argmin_{a\in\pc{\text{len}(r_1),\ldots,\text{len}(r_k)}} |a-\text{len}(c)|$\\
+    {reference length} $R=\sum_{(x,c,r)} \argmin_{a\in\pc{\text{len}(r_1),\ldots,\text{len}(r_k)}} |a-\text{len}(c)|$\\
     \begin{itemize}
         \item Use the reference whose length is closest to the candidate
     \end{itemize}
@@ -613,6 +660,18 @@
 \end{frame}
 
 \begin{frame}
+    {Human Evaluation}
+    \begin{itemize}
+        \item Human or machine generated?\\
+            \includegraphics[height=3cm]{figures/gpt3-gen}
+            \pause
+        \item Human evaluation can be tricky as the models gets better!
+        \item Pros: more reliable, multifaceted evaluation
+        \item Cons: high variance, misalignment
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
     {Evaluation in practice}
     Evaluation is a key blocker to progress in text generation.
 
@@ -622,6 +681,7 @@
         \item Automatic evaluation: how close are the candidate generation and the reference(s)?
         \item Human evaluation: task-specific criteria, e.g. grammaticality, coherence, correctness etc.
             \begin{itemize}
+                \item Annotator may need to be trained
                 \item Need to report annotator agreement
             \end{itemize}
         \item \emph{Show the outputs!}
