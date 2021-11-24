@@ -48,7 +48,9 @@ https://nyu.zoom.us/rec/share/rzLhe4FKANwfpDcpBVKli4bdQVhSKeC25gzl6hinMB6aZz9D1c
     - [slides](slides/lec09/main-annotated.pdf) [recording](https://nyu.zoom.us/rec/share/XPh9I4GICEbofC0Yj0yzZ1fwvKE14lCFrWUUNXb0u7HfBEGrZJ3mGFFRCe7JQmfv.DBBtuGMBt4jeu6Dn 
 ) D2L [9.7](https://d2l.ai/chapter_recurrent-modern/seq2seq.html), [9.8](https://d2l.ai/chapter_recurrent-modern/beam-search.html), [10](https://d2l.ai/chapter_attention-mechanisms/index.html)
 - Week 11 (Nov 17). **Representation learning**: transformers, contextualized word embedding, pre-training and fine-tuning, autoencoders
-    - [slides](slides/lec10/main.pdf)
+    - [slides](slides/lec10/main.pdf) [recording](https://nyu.zoom.us/rec/share/meRSExRkZuKW2ic0aQ7trUCbFMubV1qKGrV6xQVTk2sHoRmPPYzQXfTrNoh26Zpc.XYtx8JjqyZin1OFB 
+)
+    - [Illustrated transformer](http://jalammar.github.io/illustrated-transformer/#self-attention-in-detail)
     - [Representation Learning: A Review and New Perspectives](https://arxiv.org/abs/1206.5538)
     - [On the Opportunities and Risks of
 Foundation Models](https://arxiv.org/pdf/2108.07258.pdf)

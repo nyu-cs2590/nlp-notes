@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,8 +8,16 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+%\newcommand{\pdfnote}[1]{}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -32,7 +40,7 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{November 3, 2021}
 
 \begin{document}
 \begin{frame}
@@ -47,18 +55,29 @@
 
     \textbf{Semantics}: what is the meaning of the string?
 
-    Example: ``\texttt{3 + 2 * 4}'' (\emph{symbols})
+    Examples in programming languages:
 
-    \vspace{7em}
+    Different syntax, same semantics
+    $$
+    2 + 3 \qquad 3 + 2
+    $$
+
+    Same syntax, different semantics
+    $$
+    3 \;/\; 2 \;\;\text{(Python 2.7)} \qquad 3 \;/\; 2 \;\;\text{(Python 3)}
+    $$
+
+    (Slide adapted from Stanford CS221 Lecture 16)
 \end{frame}
 
 \begin{frame}
     {Model-theoretic semantics}
-    An expression is a string of mere symbols.
+    An \textbf{expression} is a string of mere symbols.
 
-    The expression obtains meaning when evaluated against a \textbf{model}.
+    A \textbf{model} defines meanings of symbols.
 
-    The model captures all facts we are interested in.
+    The output of an expression with respect to a model is its \textbf{denotation}.
+    \pdfnote{In other words, the expression denotes a value.}
 
     \begin{table}
         \begin{tabular}{p{5cm}ll}
@@ -75,20 +94,43 @@
 \end{frame}
 
 \begin{frame}
-    {Logic and semantics}
-    \header{Goal}: convert natural language to meaning representation\\
+    {Natural language as expressions}
+    Motivating applications:
+
+    \beamerblue{Question answering}\\
+    \begin{itemize}
+        \item[] What is the profit of Mulan? 
+        \item[] Who is the 46th president of the US?
+    \end{itemize}
+
+    \beamerblue{Personal assistant}\\
+    \begin{itemize}
+        \item[] Alexa, play my favorite song.
+        \item[] Siri, show me how to get home.
+    \end{itemize}
+
+    \begin{itemize}
+        \item But natural language is full of ambiguities
+        \item Cannot be directly handled by a computer (unlike programming/formal languages)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Semantic analysis}
+
+    \beamerblue{Goal}: convert natural language to meaning representation\\
     \begin{itemize}
         \item[] John likes fruits. (\emph{informal}) 
         \item[] $\forall x \; \textsc{Fruit}(x) \implies \textsc{Likes}(x, \textsc{John})$ (\emph{formal})
     \end{itemize}
 
-    \header{Main tool}: first-order logic 
+    {Main tool}: first-order logic 
 
     Why logic?\\
     \begin{itemize}
         \item Unambiguity: one meaning per statement
-        \item Knowledge: link symbols to knowledge (entities, relations, facts etc.) 
-        \item Inference: derive additional knowledge given statements  
+        \item Knowledge: link symbols to knowledge (entities, relations, facts etc.) (\emph{Take in complex information})
+        \item Inference: derive additional knowledge given statements  (\emph{Reason with the information})
     \end{itemize}
 \end{frame}
 
@@ -113,36 +155,37 @@
 
     The value of the expression may change given a different world model.
 \end{frame}
-
-\begin{frame}
-    {Applications}
-    \header{Question answering} (given a database)\\
-    \begin{itemize}
-        \item[] What is the profit of Mulan? 
-        \item[] Who is the 46th president of the US?
-    \end{itemize}
-
-    \header{Robot navigation}\\
-    \begin{itemize}
-        \item[] Open the pod bay doors, HAL.
-        \item[] Pick up all socks in the living room. 
-    \end{itemize}
-
-    \header{Natural language interface}\\
-    \begin{itemize}
-        \item[] Alexa, play my favorite song.
-        \item[] Siri, show me how to get home.
-    \end{itemize}
-\end{frame}
-
-\section{Logical representation of meaning}
+%
+%%\begin{frame}
+%%    {Applications}
+%%    {Question answering} (given a database)\\
+%%    \begin{itemize}
+%%        \item[] What is the profit of Mulan? 
+%%        \item[] Who is the 46th president of the US?
+%%    \end{itemize}
+%%
+%%    {Robot navigation}\\
+%%    \begin{itemize}
+%%        \item[] Open the pod bay doors, HAL.
+%%        \item[] Pick up all socks in the living room. 
+%%    \end{itemize}
+%%
+%%    {Natural language interface}\\
+%%    \begin{itemize}
+%%        \item[] Alexa, play my favorite song.
+%%        \item[] Siri, show me how to get home.
+%%    \end{itemize}
+%%\end{frame}
+%
+\section{Logical languages}
 
 \begin{frame}
     {Propositional logic}
+
     A \textbf{proposition} is a statement that is either true or false.\\
     \textbf{Propositional logic} deals with propositions and their relations.
 
-    Propositional language (\emph{syntax}):\\
+    Syntax of propositional language:\\
     \begin{itemize}
         \item \textbf{Propositional symbols}: a \textit{primitive} set of propositions
             \begin{itemize}
@@ -161,13 +204,22 @@
                     $\iff$ & equivalent to / iff & equivalence & $p\iff q $ 
                 \end{tabular}
             \end{table}
+            \pdfnote{Concept check: where are these true?}
         \item Parentheses: $($, $)$
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     {Parsing a formula}
-    \header{Exercise}: how would you check if a formula is valid (i.e. grammatical)?\\
+    How would you check if a formula is valid (i.e. grammatical)?
+
+    A propositional formula is contructed by connecting propositions using the connectives.
+    \begin{itemize}
+        \item Formulas can be nested.
+        \item Parentheses are used to disambiguate formulas.
+    \end{itemize}
+
+    Example:
     \begin{itemize}
         \item[] $((p\land q) \land \neg p)$
         \item[] $((p\lor q) \land r) \implies p)$
@@ -198,7 +250,7 @@
             $p_3$ & T & F &T &F &T &F &T &F \\
         \end{tabular}
     \end{table}
-    In which world(s) is the above formula true?
+    In which world(s) is the above formula false?
 \end{frame}
 
 \begin{frame}
@@ -224,7 +276,7 @@
     {Limitations of propositional logic}
     How do we represent knowledge of a \emph{collection} of objects?
 
-    Everyone who likes ice cream ate an ice cream.\\
+    ``Everyone who likes ice cream ate an ice cream.''\\
     \begin{itemize}
         \item[] $p_{\textsc{John}}$ (John likes ice cream) $\implies q_{\textsc{John}}$ (John ate an ice cream)
         \item[] $p_{\textsc{Joe}}$ (Joe likes ice cream) $\implies q_{\textsc{Joe}}$ (Joe ate an ice cream)
@@ -316,8 +368,15 @@
         \item Some people are mortal: $\exists x\; \textsc{Person}(x) \land \textsc{Mortal}(x)$
     \end{itemize}
 
-    Translate ``everyone speaks a language'':
-    \vspace{5em}
+    Order matters, e.g.,``everyone speaks a language'':
+    \begin{itemize}
+        \item[] $\forall x \exists y \; \textsc{speaks}(x, y)$
+        \item[] $\exists y \forall x \; \textsc{speaks}(x, y)$
+    \end{itemize}
+    \pdfnote{
+        Everyone speaks a language (but they can speak different languges).
+        There is a single language that everyone speaks.
+    }
 \end{frame}
 
 \begin{frame}
@@ -334,12 +393,12 @@
         \item Predicate over terms is an atomic formula, e.g. \textsc{Student}(\textsc{Mother}(\textsc{John}))
         \item Connectives applied to formulas (similar to propositional logic)
             \begin{itemize}
-                \item[] $\textsc{Student}(x) \quad\quad\quad \textsc{Happy}(x)$
+                \item[] $\textsc{Student}(x) \quad\land\quad \textsc{Happy}(x)$
             \end{itemize}
         \item Quantifiers applied to formulas 
             \begin{itemize}
-                \item[] $\textsc{Student}(x) \implies \textsc{Happy}(x)$
-                \item[] $\textsc{Student}(x) \implies \textsc{Happy}(x)$
+                \item[] $\forall x \;\textsc{Student}(x) \implies \textsc{Happy}(x)$
+                \item[] $\exists x \;\textsc{Student}(x) \land \textsc{Happy}(x)$
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -348,7 +407,7 @@
     {World model of first-order logic}
     How do we know if $\textsc{Friends}(\textsc{John}, \textsc{Mary})$ is true?
 
-    World model of propositional logic:\\
+    World model of propositional logic: \blue{propositions}\\
     \begin{table}
         \begin{tabular}{ll}
             proposition & truthful value \\
@@ -358,7 +417,7 @@
         \end{tabular}
     \end{table}
 
-    World model of first-order logic: \emph{objects and their relations}\\
+    World model of first-order logic: \blue{objects and their relations}\\
     \begin{table}
         \begin{tabular}{ll}
             constant symbol & object \\
@@ -383,9 +442,10 @@
 
 \begin{frame}
     {Summary}
-    \header{Syntax} produces symbols and well-formed formulas.
 
-    \header{Semantics} grounds symbols to a world and allows for evaluation of formulas.
+    \textbf{Syntax} produces symbols and well-formed formulas.
+
+    \textbf{Semantics} grounds symbols to a world and allows for evaluation of formulas.
 
     We have seen how it works for formal languages such as propositional logic and first-order logic.
 
@@ -402,9 +462,15 @@
             ``Call John, please.''
         \item[Logical form] Formal meaning representation of the utterance\\
             $\textsc{Call}(\textsc{John})$ \hspace{4em} \emph{program}
-        \item[Denotation] Mapping of the meaning representation in the model\\
+        \item[Denotation] Output of the meaning representation with respect to the model\\
             Calling XXX-XXX-XXXX ...\hspace{4em} \emph{execution result}
     \end{description}
+    \pdfnote{
+        utterance -> logical form: parser
+    }
+    \pdfnote{
+        logical form -> denotation: executor
+    }
 \end{frame}
 
 \begin{frame}
@@ -421,7 +487,7 @@
         \item We would like to construct it recursively
             \begin{itemize}
                 \item John: \textsc{John} (a unique entity)
-                \item sings: a predicate (function) that takes an entity (one argument) 
+                \item reads: a predicate (function) that takes an entity (one argument) 
             \end{itemize}
     \end{itemize}
 \end{frame}
@@ -492,14 +558,13 @@
     \vspace{-1em}
     $\textsc{Bought}(\textsc{John}, \textsc{Book})$?
 
-    \pause
     ``book'' is not a unique entity! $\textsc{Bought}(\textsc{Mary}, \textsc{Book})$
 
     Correct logical form: $\exists x \textsc{Book}(x) \land \textsc{Bought}(\textsc{John}, x)$
 
     But what should be the semantics of ``a''? $\lambda P.\lambda Q. \exists x\; P(x) \land Q(x)$
 
-    ``a book'': $\lambda Q. \exists \textsc{Book}(x) \land Q(x)$. (Need to change other NP rules)
+    ``a book'': $\lambda Q. \exists x\; \textsc{Book}(x) \land Q(x)$. (Need to change other NP rules)
 
     What about ``the'', ``every'', ``most''? 
 
@@ -509,10 +574,11 @@
 \begin{frame}
     {Learning from derivations}
 
-    Input: John bought a book (utterance)\\
-    Output: $\exists x \textsc{Book}(x) \land \textsc{Bought}(\textsc{John}, x)$ (logical form)
+    Text: John bought a book (utterance)\\
+    Annotation: 
+    \includegraphics[height=3cm]{figures/derivation}
 
-    Can we use approaches in syntactic parsing?
+    Use approaches from (discriminative) constituent parsing
 
     \pause
     Obstacles:\\
@@ -525,10 +591,10 @@
 
 \begin{frame}
     {Learning from logical forms}
-    $x$: John bought a book (utterance)\\
-    $y$: $\exists x \textsc{Book}(x) \land \textsc{Bought}(\textsc{John}, x)$ (logical form)
+    Text: John bought a book (utterance)\\
+    Annotation: $\exists x \textsc{Book}(x) \land \textsc{Bought}(\textsc{John}, x)$ (logical form)
 
-    \header{Key idea}: model derivation as a latent variable $z$ [Zettlemoyer and Collins, 2005]
+    {Key idea}: model derivation as a latent variable $z$ [Zettlemoyer and Collins, 2005]
 
     Learning: maximum marginal likelihood
     \begin{align*}
@@ -544,7 +610,12 @@
 \end{frame}
 
 \begin{frame}
-    {Framework}
+    {Learning from denotations}
+    Text: What states border Georgia? \\
+    Annotation: Alabama, Florida, North Carolina, South Carolina, Tennessee
+
+    {Key idea}: model the logical form as a latent variable $z$ [Liang, 2013]
+
     \begin{figure}
         \includegraphics[height=6cm]{figures/framework}
         \caption{[Liang 2016]}
@@ -553,7 +624,7 @@
 
 \begin{frame}
     {Datasets}
-    \header{Geo880}\\
+    {Geo880}\\
     \begin{itemize}
         \item 880 questions and database queries about US geography
         \item ``what is the highest point in the largest state?''
@@ -561,7 +632,7 @@
         %\item ~90\% accuracy
     \end{itemize}
 
-    \header{ATIS}\\
+    {ATIS}\\
     \begin{itemize}
         \item 5418 utterances of airline queries and paired logical forms
         \item ``show me information on american airlines from fort worth texas to philadelphia''
@@ -569,7 +640,7 @@
         %\item ~86\% accuracy
     \end{itemize}
 
-    \header{Free917, WebQuestions}\\
+    {Free917, WebQuestions}\\
     \begin{itemize}
         \item Questions and paired logical forms on Freebase
         \item Logically less complex but scales to many more predicates
@@ -577,22 +648,28 @@
 \end{frame}
 
 \begin{frame}
+    {Text to SQL}
+    \begin{figure}
+        \includegraphics[height=6cm]{figures/text2sql}
+    \end{figure}
+    (Slide from Victoria Lin)
+\end{frame}
+
+\begin{frame}
     {Challenges}
-        Meaning representation
+        Design the logical representation and grammar
         \begin{itemize}
+            \item Expressivity vs computation efficiency
             \item Domain-specific vs domain-general 
-            \item Natural language vs programming language 
-            \item Interaction with annotation and learning
+            \item Interacts with annotation and learning
         \end{itemize}
 
-        Learning
+        Learning from different supervision signals
         \begin{itemize}
-            \item End-to-end (utterance to action)?
+            \item End-to-end (utterance to action)
             \item Reinforcement learning (robotics, visual grounding)
             \item Interactive learning (obtain user feedback)
         \end{itemize}
-
-
 \end{frame}
 
 \end{document}

@@ -4,8 +4,8 @@ build:
 	d2lbook build html
 
 deploy_slides:
-	mkdir -p ~/website/hhexiy.github.io/nlp/2021/slides/lec05
-	cp slides/lec05/*.pdf ~/website/hhexiy.github.io/nlp/2021/slides/lec05
+	mkdir -p ~/website/hhexiy.github.io/nlp/2021/slides/lec10
+	cp slides/lec10/*.pdf ~/website/hhexiy.github.io/nlp/2021/slides/lec10
 	#cp -r _build/html/schedule.html ~/website/hhexiy.github.io/nlp/
 	#mv ~/website/hhexiy.github.io/nlp/_static ~/website/hhexiy.github.io/nlp/static
 	#mv ~/website/hhexiy.github.io/nlp/_sources ~/website/hhexiy.github.io/nlp/sources

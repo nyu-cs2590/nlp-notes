@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,notes,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,8 +8,17 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+%\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+\newcommand{\pdfnote}[1]{}
+%\usepackage[colorlinks=true]{hyperref}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -39,24 +48,216 @@
 \titlepage
 \end{frame}
 
+\section{Sequence labeling: inference}
+
 \begin{frame}
-    {Generative vs discriminative models}
-    Generative modeling:
+    {Viterbi decoding: setup}
+    \beamerblue{Goal}: find the highest-scoring sequence under the \blue{pairwise scoring function}
 
-    Discriminative modeling:
+    \beamerblue{Application}: inference in structured prediction (\eg POS tagging)
 
-    Examples:
-    \begin{table}
-        \begin{tabular}{lll}
-            & generative & discriminative\\
-            \midrule
-            classification & Naive Bayes & logistic regression\\
-            sequence labeling & & 
-        \end{tabular}
-    \end{table}
+    \beamerblue{Challenge}: \red{exponential} time complexity using brute force 
+
+    $$
+    \max_{y\in\mred{\sY^m}} \sum_{i=1}^m \mblue{s(y_i,y_{i-1})}
+    $$
+
+    \beamerblue{Key idea}: dynamic programming
+\end{frame}
+
+\begin{frame}
+    {Viterbi decoding: algorithm}
+    \begin{columns}
+        \column{0.3\textwidth}
+        \includegraphics[height=3cm]{figures/lattice}
+        \column{0.7\textwidth}
+        \begin{itemize}
+            \item Maximum score of \blue{length-$j$} sequences that \red{end at tag $t$}
+                $$
+                \pi[\mblue{j}, \mred{t}] \eqdef \max_{y\in\mblue{\sY^j}, \mred{y_j=t}} \sum_{i=1}^j s(y_i, y_{i-1})
+                $$
+            \item Fill in the chart $\pi$ \blue{recursively}
+                $$
+                \mblue{\pi[j, t]} = \max_{t'\in\mred{\sY}} \mblue{\pi[j-1, t']} + s(y_j=t, y_{j-1}=t')
+                $$
+                \vspace{-1em}
+                \begin{itemize}
+                    \item Backtracking: save argmax in $p[j,t]$
+                \end{itemize}
+        \end{itemize}
+    \end{columns}
+
+    Exponential to polynomial time with exact inference!
+
+    Why are we able to do this?
+    \pdfnote{Where were we able to do this? Is this free lunch? pairwise scoring function}
+\end{frame}
+
+\begin{frame}
+    {Viterbi decoding: derivation}
+    \begin{align*}
+        \pi[\mblue{j}, \mred{t}] &\eqdef \max_{y\in\mblue{\sY^j}, \mred{y_j=t}} \sum_{i=1}^j s(y_i, y_{i-1}) \\
+        &= \max_{y\in\mblue{\sY^{j-1}}} \sum_{i=1}^{\mblue{j-1}} s(y_i, y_{i-1}) + s(\mred{y_j=t}, y_{j-1}) \\
+        &= \max_{\mgreen{t'\in\sY}}\max_{y\in\mblue{\sY^{j-2}}, \mgreen{y_{j-1}=t'}} \sum_{i=1}^{j-1} s(y_i, y_{i-1}) + s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) \\
+        & \quad \color{gray}{
+            \max_{a\in\sA} (a + c) = c + \max_{a\in\sA} a
+        }\\
+        &= \max_{\mgreen{t'\in\sY}} s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) + 
+        \max_{y\in\mblue{\sY^{j-2}}, \mgreen{y_{j-1}=t'}} \sum_{i=1}^{j-1} s(y_i, y_{i-1}) \\
+        &= \max_{\mgreen{t'\in\sY}} s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) + \pi[\mblue{j-1}, \mgreen{t'}]
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    {Forward algorithm: setup}
+    CRF learning objective (MLE):
+    \begin{align*}
+    \ell(\theta) &= \sum_{(x,y)\in\sD} \log p(y\mid x; \theta) \\
+    &= \sum_{(x,y)\in\sD} \log \frac{\exp\p{ \theta\cdot\Phi(x,y) }}
+        {{\color{red}\sum_{y'\in\sY^m}}  \exp\p{ \theta\cdot\Phi(x,y) }}
+    \end{align*}
+
+    \beamerblue{Goal}: compute $\ell(\theta)$ (the forward pass) so that we can do backpropogation
+
+    \beamerblue{Challenge}: \red{exponential} time complexity using brute force 
+
+    If we can compute $\ell(\theta)$ efficiently, computing $\nabla_\theta \ell(\theta)$ will also be efficient. (backpropogation)
+
+\end{frame}
+
+\begin{frame}
+    {Forward decoding: algorithm}
+    \begin{columns}
+        \column{0.3\textwidth}
+        \includegraphics[height=3cm]{figures/lattice}
+        \column{0.7\textwidth}
+        \begin{itemize}
+            \item Log of the sum of exponentiated (logsumexp) scores of \blue{length-$j$} sequences that \red{end at tag $t$}
+                $$
+                \pi[\mblue{j}, \mred{t}] \eqdef \logsumexp_{y\in\mblue{\sY^j}, \mred{y_j=t}}\sum_{i=1}^j s(y_i, y_{i-1}) 
+                $$
+            \item Fill in the chart $\pi$ \blue{recursively}
+                $$
+                \mblue{\pi[j, t]} = \logsumexp_{t'\in\mred{\sY}} \mblue{\pi[j-1, t']} + s(y_j=t, y_{j-1}=t')
+                $$
+        \end{itemize}
+    \end{columns}
+
+    Exponential to polynomial time with exact inference!
+
+    Replace $\max$ in Viterbi decoding by $\logsumexp$.
+
+\end{frame}
+
+\begin{frame}
+    {Forward decoding: derivation}
+    \vspace{-2em}
+    \begin{align*}
+        \pi[\mblue{j}, \mred{t}] &\eqdef \logsumexp_{y\in\mblue{\sY^j}, \mred{y_j=t}} \sum_{i=1}^j s(y_i, y_{i-1}) \\
+        &= \logsumexp_{y\in\mblue{\sY^{j-1}}} \sum_{i=1}^{\mblue{j-1}} s(y_i, y_{i-1}) + s(\mred{y_j=t}, y_{j-1}) \\
+        & \quad \color{gray}{
+                \logsumexp_{a\in\sA, b\in\sB}(a+b)
+                = \logsumexp_{a\in\sA}\pb{\logsumexp_{b\in\sB}(a+b)}
+        }\\
+        &= \logsumexp_{\mgreen{t'\in\sY}}\logsumexp_{y\in\mblue{\sY^{j-2}}, \mgreen{y_{j-1}=t'}} \sum_{i=1}^{j-1} s(y_i, y_{i-1}) + s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) \\
+        & \quad \color{gray}{
+            \logsumexp_{a\in\sA} (a + c) = c + \logsumexp_{a\in\sA} a
+        }\\
+        &= \logsumexp_{\mgreen{t'\in\sY}} s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) + 
+        \logsumexp_{y\in\mblue{\sY^{j-2}}, \mgreen{y_{j-1}=t'}} \sum_{i=1}^{j-1} s(y_i, y_{i-1}) \\
+        &= \logsumexp_{\mgreen{t'\in\sY}} s(\mred{y_j=t}, \mgreen{y_{j-1}=t'}) + \pi[\mblue{j-1}, \mgreen{t'}]
+    \end{align*}
+
+\end{frame}
+
+\section{Bi-LSTM CRF}
+
+\begin{frame}
+    {Bi-LSTM CRF for sequence labeling}
+    \beamerblue{Bi-LSTM tagger}: use LSTM as feature extractor
+    \begin{align*}
+    p(y_i \mid x) &\propto \exp\p{s_{\text{unigram}}(x, y_i, i)} \\
+        s_{\text{unigram}}(x, y_i, i) &= \theta_{y_i} \cdot \text{Bi-LSTM}(x, i)
+    \end{align*}
+    \vspace{-2em}
+    \begin{itemize}
+        \item Learning and inference are similar to MEMM.
+    \end{itemize}
+
+    \beamerblue{Add CRF layer}: introduce dependence between neighboring labels
+    \begin{align*}
+        p(y \mid x) &\propto \exp\p{\sum_{i=1}^n s(x, y_i, y_{i-1}, i)} \\
+        s(x, y_i, y_{i-1}, i) &= s_{\text{unigram}}(x, y_i, i) + s_{\text{bigram}}(y_i, y_{i-1})
+    \end{align*}
+    \vspace{-2em}
+    \begin{itemize}
+        \item Learning and inference: forward and viterbi algorithms
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    {Does it worth it?}
+    Typical neural sequence models:
+    $$
+    p(y\mid x;\theta) = \prod_{i=1}^m p(y_i\mid x, y_{i-1};\theta)
+    $$
+
+    \beamerblue{Exposure bias}: a learning problem\\
+    \begin{itemize}
+        \item Conditions on gold $y_{i-1}$ during training but predicted $\hat{y}_{i-1}$ during test
+        \item Solution: search-aware training
+            \pdfnote{Consider possible search errors during decoding. Only relevant when using inexact search.}
+    \end{itemize}
+
+    \beamerblue{Label bias}: a model problem\\
+    \begin{itemize}
+        \item Locally normalized models are strictly less expressive than globally normalized \textit{given partial inputs} [Andor+ 16]
+        \item Solution: globally normalized models or better encoder
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    {Does it worth it?}
+    Empirical results from [Goyal+ 19]
+    \vspace{-1em}
+    \begin{figure}
+        \includegraphics[scale=0.3]{figures/global-local-paper}
+    \end{figure}
+    \vspace{-1em}
+    \begin{itemize}
+        \item Partial inputs (unidirectional) + MLE results in poor performance
+            \pdfnote{pretrain-greedy/beam: MLE}
+        \item Using bidirectional encoder significantly improves results 
+            \pdfnote{seach-aware training and globally normalized models help but biLSTM is easier.}
+    \end{itemize}
 \end{frame}
 
 \section{HMM (fully observable case)}
+
+\begin{frame}
+    {Generative vs discriminative models}
+    Generative modeling: $p(x,y)$\\
+    Discriminative modeling: $p(y\mid x)$
+
+    \vspace{-1em}
+    \begin{figure}
+        \includegraphics[height=6cm]{figures/gen-dist}
+    \end{figure}
+    \vspace{-1em}
+
+    {\small{Figure from ``An Introduction to Conditional Random Fields for Relational Learning''}}
+
+    %Examples:
+    %\begin{table}
+    %    \begin{tabular}{lll}
+    %        & generative & discriminative\\
+    %        \midrule
+    %        classification & Naive Bayes & logistic regression\\
+    %        sequence labeling & & 
+    %    \end{tabular}
+    %\end{table}
+\end{frame}
 
 \begin{frame}
     {Generative modeling for sequence labeling}
@@ -64,7 +265,7 @@
         \foreach \i\j\k in {0/the/DT, 1/fox/NN, 2/jumped/VBD, 3/over/IN, 4/the/DT, 5/dog/NN}{
             \node[anchor=base] (i\i) at (1.5*\i, 0) {\j};
             \node[anchor=base] (o\i) at (1.5*\i, 1) {\k};
-            \path[draw,arrow] (i\i.north) -- (o\i.south);
+            %\path[draw,arrow] (i\i.north) -- (o\i.south);
         }
     \end{tikzpicture}
 
@@ -72,9 +273,9 @@
 
     Three questions:\\
     \begin{itemize}
-        \item Modeling: how to define a parametric \emph{joint} distribution $p(x,y; \theta)$?
+        \item Modeling: how to define a parametric \blue{joint} distribution $p(x,y; \theta)$?
         \item Learning: how to estimate the parameters $\theta$ given observed data?
-        \item Inference: how to efficiently find $\argmax_{y\in\sY^m} p(x,y;\theta)$ given $x$?
+        \item Inference: how to efficiently find the mostly likely sequence $\argmax_{y\in\sY^m} p(x,y;\theta)$ given $x$?
     \end{itemize}
 \end{frame}
 
@@ -98,35 +299,53 @@
         &= \prod_{i=1}^m {\color{blue}p(x_i\mid y_i)}p(y_1,\ldots,y_m) \quad \text{\textcolor{brown}{a word only depends its own tag}} \\
         &= \prod_{i=1}^m p(x_i\mid y_i)\prod_{i=1}^m {\color{red}p(y_i\mid y_{i-1})} \quad \text{\textcolor{brown}{Markov assumption}}
     \end{align*}
+    \pdfnote{
+        Modeling p(x1,x2,...xm | y) is a problem we encountered before. (NB models)
+    }
+    \pdfnote{
+        If we ignore the fact that y is a sequence, then this is NB.
+    }
+    \pdfnote{
+        To reduce learning and inference complexity, we make additional Markov assumptions.
+    }
+    \pdfnote{
+        Note that to make the model managable, each time we are making some independence assumptions. Graphically, this corresponds to starting with a complete graph, then removing edges.
+    }
 \end{frame}
 
 \begin{frame}
     {Hidden Markov models}
-    \textbf{Hidden Markov model (HMM)}:\\
+    \textbf{Hidden Markov models (HMM)}:\\
     \begin{itemize}
         \item Discrete-time, discrete-state Markov chain
         \item Hidden states $z_i \in \sY$ (e.g. POS tags)
         \item Observations $x_i\in \sX$ (e.g. words)
     \end{itemize}
     $$
-    p(x_{1:m},y_{1:m}) = \prod_{i=1}^m \underbrace{p(x_i\mid y_i)}_{\text{emission probability}}
-    \prod_{i=1}^m \underbrace{p(y_i\mid y_{i-1})}_{\text{transition probability}}
+    p(x_{1:m},y_{1:m}) = \prod_{i=1}^m \underbrace{p(x_i\mid y_i)}_{\textstyle\text{emission probability}}
+    \prod_{i=1}^m \underbrace{p(y_i\mid y_{i-1})}_{\textstyle\text{transition probability}}
     $$
-    For sequence labeling:\\
+    Model parameters:\\
     \begin{itemize}
-        \item Transition probabilities: $p(y_i=t\mid y_{i-1}=t') = \theta_{t\mid t'}$
-        \item Emission probabilities: $p(x_i=w\mid y_i=t) = \gamma_{w\mid t}$
+        \item Transition probabilities: $p(y_i=t\mid y_{i-1}=t') = \theta_{t\mid t'}$ (\# params: $|\sY|^2 + 2|\sY|$)
+        \item Emission probabilities: $p(x_i=w\mid y_i=t) = \gamma_{w\mid t}$ (\# params: $|\sX|\times |\sY|$) 
         \item $y_0=*, y_m=\texttt{STOP}$
     \end{itemize}
+    \pdfnote{
+        For now, the states are observed in the data.
+    }
+    \pdfnote{
+        2Y: start -> y, end -> y
+    }
 \end{frame}
 
 \begin{frame}
     {Learning: MLE}
-    \emph{Data}: $\sD = \pc{(x,y)} (x\in\sX^m, y\in\sY^m)$\\
-    \emph{Task}: estimate transition probabilities $\theta_{t\mid t'}$ and emission probabilities $\gamma_{w\mid t}$  (\# parameters?)
+    \beamerblue{Data}: $\sD = \pc{(x,y)} (x\in\sX^m, y\in\sY^m)$ (labeled dataset)\\
+    \beamerblue{Task}: estimate transition probabilities $\theta_{t\mid t'}$ and emission probabilities $\gamma_{w\mid t}$
 
     \begin{align*}
-        \ell(\theta,\gamma) &= \sum_{(x,y)\in\sD} \p{
+        \text{Likelihood:}\qquad \ell(\theta,\gamma) &= \sum_{(x,y)\in\sD} \p{
             \sum_{i=1}^m \log p(x_i\mid y_i) +
             \sum_{i=1}^m \log p(y_i\mid y_{i-1}) } \\
         \max_{\theta,\gamma} & \sum_{(x,y)\in\sD} \p{
@@ -140,7 +359,19 @@
 
 \begin{frame}
     {MLE solution}
-    Count the occurrence of certain transitions and emissions in the data.
+    \begin{tikzpicture}
+        \foreach \i\j\k in {0/the/DT, 1/fox/NN, 2/jumped/VBD, 3/over/IN, 4/the/DT, 5/dog/NN}{
+            \node[anchor=base] (i\i) at (1.5*\i, 0) {\j};
+            \node[anchor=base] (o\i) at (1.5*\i, 1) {\k};
+            \path[draw,arrow,blue] (o\i.south) -- (i\i.north);
+        }
+        \foreach \i in {1,...,5}{
+            \pgfmathtruncatemacro\j{\i-1}
+            \path[draw,arrow,red] (o\j.east) -- (o\i.west);
+        }
+    \end{tikzpicture}
+
+    Count the occurrence of certain transitions and emissions in the labeled data.
 
     Transition probabilities:
     $$
@@ -153,24 +384,33 @@
     {\sum_{w'\in\sX}\text{count}(w',t)}
     $$
 
-    \vspace{3em}
+    Example: $\theta_{\text{NN}\mid\text{DT}}=$
+        \hspace{3cm} $\gamma_{\text{fox}\mid\text{NN}}=$
 \end{frame}
 
 \begin{frame}
     {Inference}
-    Task: given $x\in\sX^m$, find the most likely $y\in\sY^m$
+    \beamerblue{Task}: given model parameters, observe $x\in\sX^m$, find the most likely $y\in\sY^m$
     \begin{align*}
         &\argmax_{y\in\sY^m} \log p(x,y) \\
         &= \argmax_{y\in\sY^m} \sum_{i=1}^m \log p(x_i\mid y_i)
         + \sum_{i=1}^m \log p(y_i\mid y_{i-1})
     \end{align*}
+
     Viterbi + backtracking:
-    $$
-    \pi[j, t] = \max_{t'\in\sY}\p{ \log p(x_j\mid t) + \log p(t\mid t') + \pi[j-1, t'] }
-    $$
+    \begin{align*}
+        s(y) &= \sum_{i=1}^m s(y_i, y_{i-1}) = \sum_{i=1}^m \log p(x_i\mid y_i) + \log p(y_i\mid y_{i-1})\\
+        \pi[j, t] &= \max_{t'\in\sY}
+            \underbrace{\log p(x_j\mid t) + \log p(t\mid t')}_{\textstyle s(y_i, y_{i-1})}
+            + \pi[j-1, t'] 
+    \end{align*}
 \end{frame}
 
-\section{Expectation Minimization}
+\section{Expectation Maximization}
+
+%\begin{frame}
+%    {Latent variable models}
+%\end{frame}
 
 \begin{frame}
     {Naive Bayes with missing labels}
@@ -196,28 +436,83 @@
 \begin{frame}
     {A chicken and egg problem}
     If we know the model parameters, we can predict labels easily.\\
-    If we know the labels, we can estiamte the model parameters easily.
-
-    \emph{Idea}: start with guesses of labels, then iteratively refine it.
+    If we know the labels, we can estiamte the model parameters easily.\\
+    \beamerblue{Idea}: start with guesses of labels, then iteratively refine it.
     \vspace{-1em}
     \begin{table}
         \begin{tabular}{c|ccccc}
             ID & US & government & gene & lab & label \\
             \midrule
-            1 & 1 & 1 & 0 & 0 & \onslide<2>{0} \\
-            2 & 0 & 1 & 0 & 0 & \onslide<2>{0} \\
-            3 & 0 & 0 & 1 & 1 & \onslide<2>{0} \\
-            4 & 0 & 1 & 1 & 1 & \onslide<2>{1} \\
-            5 & 1 & 1 & 0 & 0 & \onslide<2>{1}
+            1 & 1 & 1 & 0 & 0 &  \\
+            2 & 0 & 1 & 0 & 0 &  \\
+            3 & 0 & 0 & 1 & 1 &  \\
+            4 & 0 & 1 & 1 & 1 &  \\
+            5 & 1 & 1 & 0 & 0 & 
         \end{tabular}
 
         \begin{tabular}{c|cccc}
             & US & government & gene & lab \\
              \midrule
-            $p(\cdot\mid 0)$ & \onslide<2>{1/3} & \onslide<2>{2/3} & \onslide<2>{1/3} & \onslide<2>{1/3} \\
-            $p(\cdot\mid 1)$ & \onslide<2>{1/2} & \onslide<2>{1} & \onslide<2>{1/2} & \onslide<2>{1/2} \\
+            $p(\cdot\mid 0)$ &&&&\\ %\onslide<3>{1/3} & \onslide<3>{2/3} & \onslide<3>{1/3} & \onslide<3>{1/3} \\
+            $p(\cdot\mid 1)$ &&&& %\onslide<3>{1/2} & \onslide<3>{1} & \onslide<3>{1/2} & \onslide<3>{1/2} \\
         \end{tabular}
     \end{table}
+        $$
+        p(y=0) = \qquad, p(y=1) = \qquad
+        $$
+\end{frame}
+
+\begin{frame}
+    {Iteration 0}
+    Randomly label the data, then estimate parameters given the pseudolabels.
+    \vspace{-1em}
+    \begin{table}
+        \begin{tabular}{c|ccccc}
+            ID & US & government & gene & lab & label \\
+            \midrule
+            1 & 1 & 1 & 0 & 0 & {0} \\
+            2 & 0 & 1 & 0 & 0 & {0} \\
+            3 & 0 & 0 & 1 & 1 & {0} \\
+            4 & 0 & 1 & 1 & 1 & {1} \\
+            5 & 1 & 1 & 0 & 0 & {1}
+        \end{tabular}
+
+        \begin{tabular}{c|cccc}
+            & US & government & gene & lab \\
+             \midrule
+            $p(\cdot\mid 0)$ & {1/3} & \onslide<1>{2/3} & \onslide<1>{1/3} & \onslide<1>{1/3} \\
+            $p(\cdot\mid 1)$ & \onslide<1>{1/2} & \onslide<1>{1} & \onslide<1>{1/2} & \onslide<1>{1/2} \\
+        \end{tabular}
+        $$
+        p(y=0) = 3/5, \quad p(y=1) = 2/5
+        $$
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    {Iteration 1}
+    Given parameters from the last iteration, update the pseudolabels. 
+    \vspace{-1em}
+    \begin{table}
+        \begin{tabular}{c|cccccc}
+            ID & US & government & gene & lab & \multicolumn{2}{c}{label} \\
+            & & & & & $y=0$ & $y=1$ \\
+            \midrule
+            1 & 1 & 1 & 0 & 0 & & \\
+            2 & 0 & 1 & 0 & 0 & & \\
+            3 & 0 & 0 & 1 & 1 & & \\
+            4 & 0 & 1 & 1 & 1 & & \\
+            5 & 1 & 1 & 0 & 0 & &
+        \end{tabular}
+
+        \begin{tabular}{c|cccc}
+            & US & government & gene & lab \\
+             \midrule
+            $p(\cdot\mid 0)$ & {1/3} & \onslide<1>{2/3} & \onslide<1>{1/3} & \onslide<1>{1/3} \\
+            $p(\cdot\mid 1)$ & \onslide<1>{1/2} & \onslide<1>{1} & \onslide<1>{1/2} & \onslide<1>{1/2} \\
+        \end{tabular}
+    \end{table}
+        $$p(y=0) = 3/5, \quad p(y=1) = 2/5$$
 \end{frame}
 
 \begin{frame}
@@ -239,6 +534,7 @@
         \item Similar to the MLE solution except that we're using ``soft counts''.
         \item What is the algorithm optimizing?
     \end{itemize}
+    \pdfnote{Now let's derive the algorithm in a top-down way, starting from the objective.}
 \end{frame}
 
 \begin{frame}
@@ -247,6 +543,7 @@
 
     \textbf{Marginal likelihood}: $L(\theta;\sD) = \prod_{x\in\sD} {\color{blue}\sum_{z\in\sZ}}p(x,{\color{blue}z};\theta)$\\
     \begin{itemize}
+        \item Introducing latent variables allows us to better model the true generative process 
         \item Marginalize over the (discrete) latent variable $z\in\sZ$ (e.g. missing labels)
     \end{itemize}
 
@@ -261,24 +558,24 @@
 
 \begin{frame}
     {Intuition}
-    \emph{Problem}: marginal log-likelihood is hard to optimize (only observing the words)
+    \beamerblue{Problem}: marginal log-likelihood is hard to optimize (only observing the words)
     %$$
     %\max_\theta \log p(x;\theta)
     %$$
 
-    \emph{Observation}: complete data log-likelihood is easy to optimize (observing both words and tags)
+    \beamerblue{Observation}: \textbf{complete data log-likelihood} is easy to optimize (observing both words and tags)
     $$
     \max_\theta \log p(x,z;\theta)
     $$
 
-    \emph{Idea}: guess a distribution of the latent variables $q(z)$ (soft tags)
+    \beamerblue{Idea}: guess a distribution of the latent variables $q(z)$ (soft tags)
 
     Maximize the \emph{expected} complete data log-likelihood:
     $$
     \max_\theta \sum_{z\in\sZ} q(z) \log p(x,z;\theta)
     $$
 
-    \emph{EM assumption}: the expected complete data log-likelihood is easy to optimize (use soft counts)
+    %\beamerblue{Assumption}: the expected complete data log-likelihood is easy to optimize (use soft counts)
 \end{frame}
 
 \begin{frame}
@@ -286,9 +583,9 @@
     \begin{align*}
         \log p(x;\theta) &= \log \sum_{z\in\sZ} p(x,z;\theta) \\
         &= \log \sum_{z\in\sZ} q(z) \frac{p(x,z;\theta)}{q(z)}
-        \quad {\color{brown}= \log \BE_z\pb{p(x,z;\theta)}}\\
+        \quad {\color{brown}= \log \BE_z\pb{f(z)}}\\
         &\ge \sum_{z\in\sZ} q(z) \log \frac{p(x,z;\theta)}{q(z)}
-        \quad {\color{brown}= \BE_z\pb{\log p(x,z;\theta)}} \\
+        \quad {\color{brown}= \BE_z\pb{\log f(z)} \quad\text{Jensen's inequality}} \\
         &\eqdef \sL(q, \theta)
     \end{align*}
     \vspace{-2em}
@@ -296,25 +593,93 @@
         \item \textbf{Evidence}:  $\log p(x;\theta)$
         \item \textbf{Evidence lower bound (ELBO)}: $\sL(q, \theta)$
         \item $q$: chosen to be a family of tractable distributions
-        \item Idea: \emph{maximize the ELBO} instead of $\log p(x;\theta)$
+        \item Idea: Can we maximize the lowerbound instead?
+            %\emph{maximize the ELBO} instead of $\log p(x;\theta)$
     \end{itemize}
+    \pdfnote{But we have to be careful what's the gap between this lowerbound and our objective. Draw loose lowerbound.}
+\end{frame}
+
+\begin{frame}{Kullback-Leibler Divergence}
+
+\begin{itemize}
+\item Let $p(x)$ and $q(x)$ be probability mass functions (PMFs) on $\sX$. 
+\item How can we measure how ``different'' $p$ and $q$ are?
+\end{itemize}
+
+\begin{itemize}
+\item The \textbf{Kullback-Leibler} or \textbf{``KL'' Divergence} is defined
+by
+\begin{eqnarray*}
+    \KL{p}{q} & = & \sum_{x\in\sX}p(x)\log\frac{p(x)}{q(x)}.
+\end{eqnarray*}
+(Assumes $q(x)=0$ implies $p(x)=0$.)
+\end{itemize}
+
+\begin{itemize}
+\item Can also write this as
+\begin{eqnarray*}
+    \KL{p}{q} & = & \BE_{x\sim p}\log\frac{p(x)}{q(x)}.
+\end{eqnarray*}
+\end{itemize}
+\end{frame}
+%
+\begin{frame}{Gibbs Inequality ($\KL{p}{q}\ge0$ and $\KL{p}{q}=0$)}
+\begin{theorem}
+[Gibbs Inequality]Let $p(x)$ and $q(x)$ be PMFs on $\sX$. Then
+\[
+\KL{p}{q}\ge0,
+\]
+with equality iff $p(x)=q(x)$ for all $x\in\sX$. 
+\end{theorem}
+
+
+\begin{itemize}
+\item KL divergence measures the ``distance'' between distributions.
+\end{itemize}
+
+\begin{itemize}
+\item Note:
+
+\begin{itemize}
+\item KL divergence \textbf{not a metric}.
+\item KL divergence is \textbf{not symmetric}.
+\end{itemize}
+\end{itemize}
+\end{frame}
+%
+\begin{frame}{Gibbs Inequality: Proof}
+
+\begin{eqnarray*}
+\KL{p}{q} & = & \BE_{p}\left[-\log\left(\frac{q(x)}{p(x)}\right)\right]\\
+ & \ge & -\log\left[\BE_{p}\left(\frac{q(x)}{p(x)}\right)\right]\mbox{\qquad\text{(Jensen's)}}\\
+ & = & -\log\left[\sum_{\left\{ x\mid p(x)>0\right\} }p(x)\frac{q(x)}{p(x)}\right]\\
+ & = & -\log\left[\sum_{x\in\sX}q(x)\right]\\
+ & = & -\log1=0.
+\end{eqnarray*}
+
+
+\begin{itemize}
+\item Since $-\log$ is strictly convex, we have strict equality iff $q(x)/p(x)$
+is a constant, which implies $q=p$ . 
+\end{itemize}
 \end{frame}
 
 \begin{frame}
     {Justification for maximizing ELBO}
     \begin{align*}
-        \sL(q, \theta) &= \sum_{z\in\sZ} q(z) \log \frac{p(x,z;\theta)}{q(z)} \\
+        \sL(q, \theta) &\eqdef \sum_{z\in\sZ} q(z) \log \frac{p(x,z;\theta)}{q(z)} \\
         &= \sum_{z\in\sZ} q(z)\log \frac{p(z\mid x;\theta)p(x;\theta)}{q(z)} \\
         &= -\sum_{z\in\sZ}q(z) \log \frac{q(z)}{p(z\mid x;\theta)}
         + \sum_{z\in\sZ} q(z) \log p(x;\theta) \\
-        &= -\KL{q(z)}{p(z\mid x;\theta)} + \underbrace{\log p(x;\theta)}_{\text{evidence}}
+        &= -\KL{q(z)}{p(z\mid x;\theta)} + \underbrace{\log p(x;\theta)}_{\textstyle\text{evidence}}
     \end{align*}
     \vspace{-2em}
     \begin{itemize}
         \item \textbf{KL divergence}: measures ``distance'' between two distributions (not symmetric!)
         \item $\KL{q}{p}\ge 0$ with equality iff $q(z) = p(z\mid x)$.
-        \item ELBO = evidence - KL $\le$ evidence
+        \item ELBO = evidence - KL $\le$ evidence (KL $\ge$ 0)
     \end{itemize}
+    \pdfnote{q(z) is the our guesses of the latent variable. If the guess is close, then we are good.}
 \end{frame}
 
 \begin{frame}
@@ -326,7 +691,7 @@
     Fix $\theta=\theta_0$ and $\max_q \sL(q, \theta_0)$: $q^* = p(z\mid x;\theta_0)$ 
     \vspace{10em}
 
-    Let $\theta^*, q^*$ be the global optimzer of $\sL(q, \theta)$, then $\theta^*$ is the global optimizer of $\log p(x;\theta)$. (Proof: exercise)
+    Let $\theta^*, q^*$ be the global optimzer of $\sL(q, \theta)$, then $\theta^*$ is the global optimizer of $\log p(x;\theta)$. %(Proof: exercise)
 \end{frame}
 
 \begin{frame}
@@ -364,7 +729,7 @@
                     \end{align*}
                 \item $\theta^{\text{new}} \leftarrow \argmax_\theta \sL(q^*, \theta)$
                     \begin{align*}
-                        \text{\textbf{Minimization} (the M-step):} \quad
+                        \text{\textbf{Maximization} (the M-step):} \quad
                         \theta^{\text{new}} \leftarrow \argmax_\theta J(\theta)
                     \end{align*}
             \end{enumerate}
@@ -379,7 +744,7 @@
         \includegraphics[height=5cm]{figures/EM-twosteps-Bishop9.14.png}
     \end{figure}
     \vspace{-2em}
-    Exercise: prove that EM increases the marginal likelihood monotonically
+    HW3: prove that EM increases the marginal likelihood monotonically
     $$
     \log p(x;\theta^{\text{new}}) \ge \log p(x;\theta^{\text{old}})
     \;.
@@ -418,30 +783,30 @@
     M-step has closed-form solution:
     \begin{align*}
         \theta_z &= \frac{\sum_{x\in\sD} q^*_x(z)}
-        {\sum_{z\in\sZ} \sum_{x\in\sD}\underbrace{q^*_x(z)}_{\text{soft label count}}}\\
+        {\sum_{z\in\sZ} \sum_{x\in\sD}\underbrace{q^*_x(z)}_{\textstyle\text{soft label count}}}\\
         \theta_{w\mid z} &= \frac{
             \sum_{x\in\sD} q^*_x(z)\text{count}(w\mid x)  
         }{
-            \sum_{w\in\sV}\sum_{x\in\sD} \underbrace{q^*_x(z)\text{count}(w\mid x)}_{\text{soft word count}
+            \sum_{w\in\sV}\sum_{x\in\sD} \underbrace{q^*_x(z)\text{count}(w\mid x)}_{\textstyle\text{soft word count}
         }}
     \end{align*}
     Similar to the MLE solution except that we're using soft counts.
 \end{frame}
 
-\begin{frame}
-    {M-step for multinomial naive Bayes}
-    \begin{align*}
-        \max_\theta& \sum_{x\in\sD} \sum_{z\in\sZ}q^*_x(z)\p{ \sum_{w\in\sV}
-        \log \theta_{w\mid z}^{\text{count}(w\mid x)} + \log \theta_z }\\
-        \text{s.t.} & \quad \sum_{w\in\sV} \theta_{w\mid z} = 1 \quad \forall w\in\sV,
-        \quad \sum_{z\in\sZ}\theta_z = 1
-    \end{align*}
-    \vspace{14em}
-\end{frame}
+%\begin{frame}
+%    {M-step for multinomial naive Bayes}
+%    \begin{align*}
+%        \max_\theta& \sum_{x\in\sD} \sum_{z\in\sZ}q^*_x(z)\p{ \sum_{w\in\sV}
+%        \log \theta_{w\mid z}^{\text{count}(w\mid x)} + \log \theta_z }\\
+%        \text{s.t.} & \quad \sum_{w\in\sV} \theta_{w\mid z} = 1 \quad \forall w\in\sV,
+%        \quad \sum_{z\in\sZ}\theta_z = 1
+%    \end{align*}
+%    \vspace{14em}
+%\end{frame}
 
 \begin{frame}
     {Summary}
-    \textbf{Expectation minimization (EM)} algorithm:
+    \textbf{Expectation maximization (EM)} algorithm:
     maximizing ELBO $\sL(q, \theta)$ by coordinate ascent
 
     \textbf{E-step}:
@@ -544,6 +909,7 @@
         }
     \end{tikzpicture}
     \end{center}
+    \vspace{-1em}
     Group sequences where $z_i=t$:
     \begin{align*}
     \sum_{{z\in\sY^m}} q^*_x(z) \text{count}(w,t\mid x,z)
@@ -571,11 +937,12 @@
         }
     \end{tikzpicture}
     \end{center}
+    \vspace{-1em}
     Group sequences where $z_i=t, z_{i-1}=t'$:
     \begin{align*}
     \sum_{{z\in\sY^m}} q^*_x(z) \text{count}(t'\rightarrow t\mid z)
         &= \sum_{i=1}^m \mu_x(z_i=t,z_{i-1}=t')  \\
-        \mu_x(z_i=t) &= \sum_{\pc{z\in\sY^m \mid z_i=t, z_{i-1}=t}} q^*_x(z)
+        \mu_x(z_i=t, z_{i-1}=t') &= \sum_{\pc{z\in\sY^m \mid z_i=t, z_{i-1}=t'}} q^*_x(z)
     \end{align*}
 \end{frame}
 
@@ -591,7 +958,7 @@
             \sum_{\substack{z_{1:i-1}\\z_{i-1}=t'}}  \prod_{j=1}^{i-1}\psi(z_j,z_{j-1})
         }
         \psi(t,t')
-        \p{\sum_{\substack{z_{i+1:m}\\z_i=t}} \prod_{j=i}^{m}\psi(z_j,z_{j-1})
+        \p{\sum_{\substack{z_{i+1:m}\\z_i=t}} \prod_{j=i+1}^{m}\psi(z_j,z_{j-1})
         } \\
         &= \sum_{t'} \alpha[i-1, t] \psi(t,t') \beta[i, t]
         = {\color{blue}\alpha[i,t] \beta[i,t]}
@@ -631,6 +998,9 @@
     \end{align*}
     \end{enumerate}
     In practice, compute in the \emph{log space}.
+    \pdfnote{
+        mu-x are soft counts.
+    }
 \end{frame}
 
 \begin{frame}
@@ -673,15 +1043,18 @@
                 \item Compute forward and backward probabilities
                 \item Update the emission and transition probabilities using expected counts
             \end{enumerate}
-        \item[] If the solution is bad, re-run EM with a different random seed.
+        \item If the solution is bad, re-run EM with a different random seed.
     \end{enumerate}
 
     General EM:\\
     \begin{itemize}
         \item One example of variational methods (use a tractable $q$ to approximate $p$)
         \item May need approximation in both the E-step and the M-step
-        \item Useful in probabilistic models and Bayesian methods
+        %\item Useful in probabilistic models and Bayesian methods
     \end{itemize}
+    \pdfnote{
+        Useful in probabilistic models and Bayesian methods
+    }
 \end{frame}
 
 \end{document}
