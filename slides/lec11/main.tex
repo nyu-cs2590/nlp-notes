@@ -1,4 +1,4 @@
-\documentclass[usenames,dvipsnames,notes]{beamer}
+\documentclass[usenames,dvipsnames,11pt,aspectratio=169]{beamer}
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{pgfplots}
@@ -8,10 +8,16 @@
 \usepackage{tabularx}
 \usepackage{makecell}
 \usepackage{cuted}
+\usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{tcolorbox}
-\usepackage{subcaption}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{tikz}
+\usepackage{pdfcomment}
+\newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
+%\newcommand{\pdfnote}[1]{}
 
 \usepackage{pgfpages}
 %\setbeameroption{show notes on second screen}
@@ -34,32 +40,32 @@
 \author[He He]{He He
 }
 \institute[NYU]{New York University}
-\date{\today}
+\date{November 24, 2021}
 
 \begin{document}
 \begin{frame}
 \titlepage
 \end{frame}
 
-\begin{frame}
-    {Logistics}
-    Plan for the rest of the semester\\
-    \begin{itemize}
-        \item Next week
-            \begin{itemize}
-                \item Guest lecture by Victoria Lin\\
-                Title: Conversation with Data: Where We Are and What's Next
-            \item Writing and presentation, summary and outlook
-            \end{itemize}
-        \item Final week: project presentations\\
-            About 30 groups, 3 min talk + 1 min Q\&A
-        \item Deliverables
-            \begin{itemize}
-                \item HW4: CKY parser, due Dec 8
-                \item Project report: due Dec 20 
-            \end{itemize}
-    \end{itemize}
-\end{frame}
+%\begin{frame}
+%    {Logistics}
+%    Plan for the rest of the semester\\
+%    \begin{itemize}
+%        \item Next week
+%            \begin{itemize}
+%                \item Guest lecture by Victoria Lin\\
+%                Title: Conversation with Data: Where We Are and What's Next
+%            \item Writing and presentation, summary and outlook
+%            \end{itemize}
+%        \item Final week: project presentations\\
+%            About 30 groups, 3 min talk + 1 min Q\&A
+%        \item Deliverables
+%            \begin{itemize}
+%                \item HW4: CKY parser, due Dec 8
+%                \item Project report: due Dec 20 
+%            \end{itemize}
+%    \end{itemize}
+%\end{frame}
 
 \section{Introduction}
 
@@ -70,7 +76,7 @@
             \includegraphics[width=3cm]{figures/colbert-siri}
         \end{column}
         \begin{column}{0.7\textwidth}
-            \begin{tabular}{lp{6cm}}
+            \begin{tabular}{lp{7cm}}
                 Colbert: & What am I talking about tonight? \\
                 Siri: & I would perfer not to say. \\
                 ... & ...\\
@@ -100,6 +106,11 @@
         \item (Ice or no ice? Coffee or tea? Morning or afternoon?) The latter, please.
         \item Can you pass me the salt?
     \end{itemize}
+    \pdfnote{
+        Context is important in understanding a sentence.
+        Note that here context no longer refers to the context represented by a piece of text,
+        but a broad notion of all relevant concepts in a world where the sentence occurs.
+    }
 \end{frame}
 
 \begin{frame}
@@ -120,6 +131,14 @@
             \end{figure}
         \end{column}
     \end{columns}
+    \pdfnote{
+        How do words obtain their meanings?
+        Is there a definition that everyone agrees on?
+        Wittgenstein thinks that meaning is not a rigid definition,
+        but is obatined through use.
+        If in this class, we all agree to use the word 'dax' to refer to books, then it has that meaning within this class. 
+        Note that under this view, meaning must be situated in a context, such as the meaning of 'dax' in this class.
+    }
 \end{frame}
 
 \begin{frame}
@@ -144,8 +163,13 @@
         \begin{itemize}
             \item Connect symbols to the world: utterance $\to$ logical form $\to$ action $\to$ response   
             \item Successful but limited to the blocks world
-            \item Renewed interest in grounded systems with the success of neural networks 
+            \item Renewed interest in grounded language understanding with the success of neural networks 
         \end{itemize}
+        \pdfnote{
+            In the 60's, most people don't work on low-level NLP tasks we are familiar today. They were ambitious enough to build machines that directly communicate with humans.
+            Consider the SHRDLU task, the computer must understand the sentence and connect the symbols to this blocks world.
+            In other words, the system is grounded in this world.
+        }
 \end{frame}
 
 \begin{frame}
@@ -328,16 +352,16 @@
 
 \begin{frame}
     {Neural module networks}
-    Compose modules:\\
-    \begin{enumerate}
-        \item Universal representation: dependency parse (objects and attributes, events and participants etc.)
-        \item Composition of modules (e.g. $\texttt{color}(x)$, $\texttt{what}(\texttt{fly})$)
+    Jointly learning the module networks and the composition (layout)
+
+    What to do with the unobserved layout (i.e. logical form)?\\
+        %\item Universal representation: dependency parse (objects and attributes, events and participants etc.)
+        %\item Composition of modules %(e.g. $\texttt{color}(\texttt{cylinder}(x))$)
             \begin{itemize}
-                \item Rule-based mapping (restricted domains) 
+                \item Use rules (in restricted domains) 
                 \item Model as a latent variable
                 \item Obtain human annotation
             \end{itemize}
-    \end{enumerate}
 
     \vspace{-1em}
     \begin{figure}
@@ -365,7 +389,7 @@
     \begin{columns}
         \begin{column}{0.4\textwidth}
     \begin{figure}
-        \includegraphics[height=3.5cm]{figures/instruction}
+        \includegraphics[height=4cm]{figures/instruction}
         \caption{[Ruis+ 2020]}
     \end{figure}
         \end{column}
@@ -375,7 +399,12 @@
         \item Agent: Try out random actions in the world 
         \item World: reward agent when goals are achieved
     \end{itemize}
+            \medskip
+
     How to learn from experience?
+            \medskip
+
+            (Analogous to human learning)
         \end{column}
     \end{columns}
 \end{frame}
@@ -392,7 +421,7 @@
         \item It takes an \textbf{action} $a_t\in\sA$ and transitions to state $s_{t+1}$ with probability $\BP(s_{t+1}=s'\mid s_t=s, a_t=a)$.
         \item The agent receives an immediate \textbf{reward} $r(s, s', a)$.
     \end{itemize}
-    \header{Goal}: learn a \textbf{policy} $\pi\colon \sS \to \sA$ that maximizes the expected \textbf{return}
+    \beamerblue{Goal}: learn a \textbf{policy} $\pi\colon \sS \to \sA$ that maximizes the expected \textbf{return}
     $$
     \BE\pb{\sum_{t=0}^\infty r(s_t, s_{t+1}, a_t)} \quad \text{ where } a_t\sim\pi(s_t) 
     $$
@@ -403,7 +432,8 @@
     \begin{figure}
         \includegraphics[height=6cm]{figures/yann-rl}
     \end{figure}
-    ``If intelligence is a cake, the bulk of the cake is unsupervised learning, the icing on the cake is supervised learning, and the cherry on the cake is reinforcement learning (RL).''---Yann Lecun
+    %``If intelligence is a cake, the bulk of the cake is unsupervised learning, the icing on the cake is supervised learning, and the cherry on the cake is reinforcement learning (RL).''---Yann Lecun
+    The cherry: most important real-world problems involve complex decision making with sparse supervision signal (healthcare, self-driving etc.)
 
 \end{frame}
 
@@ -419,7 +449,7 @@
     \begin{itemize}
         \item \emph{Delayed reward}: which actions are responsible for the reward/penalty?
         \item \emph{Incomplete information}: exploration vs exploitation
-        \item Real world RL (education, healthcare, self-driving): expensive exploration
+        \item \emph{Expensive exploration}: real world RL (education, healthcare, self-driving)
     \end{itemize}
         \end{column}
     \end{columns}
@@ -477,13 +507,14 @@
 
 \begin{frame}
     {Learning}
-    Policy gradient methods:
+    \textbf{Policy gradient methods}:
     directly learn $\pi$ parametrized by $\theta$
-    to maximize the expected return
-            $$
-            \nabla_\theta J(\theta) = \frac{1}{N}\sum_{i=1}^N
-            \BE\pb{\nabla_\theta\log\pi_\theta(a\mid s)Q^\pi(s,a)}
-            $$
+    by maximizing the expected return
+    \begin{align*}
+        J(\theta) &= \mathbb{E}_\pi\pb{Q^\pi(s,a)} \\
+            \nabla_\theta J(\theta) &= 
+            \BE_\pi\pb{\nabla_\theta\log\pi_\theta(a\mid s)Q^\pi(s,a)}
+    \end{align*}
             \vspace{-1em}
             \begin{itemize}
                 \item Expectation over the starting state distribution and the stationary distribution of $\pi_\theta$
@@ -492,7 +523,7 @@
                 \item Implementation
                     \begin{enumerate}
                         \item Sample trajectories from $\pi_\theta$
-                        \item Receive reward
+                        \item Receive rewards
                         \item Gradient update: weighted MLE update
                     \end{enumerate}
             \end{itemize}
@@ -513,7 +544,7 @@
         \caption{ Interactive Task Learning with Physical Agents [Chai+ 2018]}
     \end{figure}
 
-    Often require additional supervision: human demonstration, guidance through conversation
+    Additional supervision: human demonstration, guidance through conversation
 \end{frame}
 
 \begin{frame}
@@ -576,6 +607,10 @@
         \item Rational speaker: what's the listener's orientation?
         \item Rational listener: should I pass exactly two objects or at least two? 
     \end{itemize}
+    \pdfnote{
+        1. Rational speaker's utterance is robust to listener's orientation.
+        2. Rational listener's behavior infers that the speaker would have said walk until the sofa it it ends in the last block.
+    }
 \end{frame}
 
 \begin{frame}
@@ -605,6 +640,7 @@
     $\text{utterance} = \pc{\text{square}, \text{circle}, \text{green}, \text{blue}}$
 
     Assuming the speaker is cooperative, which object does ``blue'' refer to?
+    \pdfnote{If the object is blue circle, the speaker would have said "circle".}
 \end{frame}
 
 \begin{frame}
@@ -620,7 +656,7 @@
     \hspace{2em} ``blue'': blueSquare or blueCircle
 
     \textbf{Pragmatic speaker}: minimize the literal listener's effort of inferring the state while maximizing communication efficiency\\
-    \hspace{2em} blueSquare: ``blue'' or ``square''
+    \hspace{2em} blueSquare: ``blue'' or ``square'' or ``blue square''
 
     \textbf{Pragmatic listener}: infer the state by reasoning about the pragmatic speaker\\
     \hspace{2em} ``blue'': blueSquare
@@ -647,6 +683,9 @@
     p_{L_0}(s\mid u) \propto \underbrace{p(s)}_{\text{state prior}}
     \underbrace{m(s,u)}_{\text{world model}}
     $$
+    $$
+    m: \sS \times \sU \to \pc{0, 1}
+    $$
 \end{frame}
 
 \begin{frame}
@@ -657,6 +696,7 @@
         \node (b) [circle,fill=blue!40!white,minimum height=1cm,right=1cm of a] {};
         \node (c) [rectangle,fill=green!40!white,minimum size=1cm,right=1cm of b] {};
     \end{tikzpicture}
+
         \begin{tabular}{cp{2cm}p{2cm}p{2cm}}
         blue   & 1/2 & 1/3   & 0 \\
         square & 1/2 & 0     & 1/3 \\
@@ -679,6 +719,7 @@
         \node (b) [circle,fill=blue!40!white,minimum height=1cm,right=1cm of a] {};
         \node (c) [rectangle,fill=green!40!white,minimum size=1cm,right=1cm of b] {};
     \end{tikzpicture}
+
         \begin{tabular}{cp{2cm}p{2cm}p{2cm}}
         blue   & 3/5 & 2/5   & 0 \\
         square & 3/5 & 0     & 2/5 \\

@@ -58,8 +58,9 @@ Foundation Models](https://arxiv.org/pdf/2108.07258.pdf)
 #### Beyond text
 
 - Week 12 (Nov 24). **Language grounding**: language+vision/robotics, pragmatics, RL agents 
+    - [slides](slides/lec11/main.pdf) [recording 1](https://nyu.zoom.us/rec/share/uv9QPhTLObTkfaF_Kv1UFWJP6DIguLGnOLAv9G6z5MwEe6fFrSCihebqL25yHLrm.EBpbArio8tszJJSs?startTime=1637947633000) [recording 2](https://nyu.zoom.us/rec/share/3o2J3BwzGWAUQ7prN_nRR-XVTPXaoYf97391rlcXh6atAmTkNObrzjNVqHtLvrvr.JvGDurWIB_ST2eeX?startTime=1637948803000)
 
 #### Conclusion
 
-- Week 13 (Dec 1). **Summary and outlook**: summary of the course, fairness and ethics in NLP 
+- Week 13 (Dec 1). **Guest lecture by Nasrin Mostafazadeh**: "How far have we come in giving our NLU systems common sense?" 
 - Week 14 (Dec 8). **Project presentations**
